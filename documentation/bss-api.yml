@@ -1,0 +1,353 @@
+    openapi: '3.0.0'
+    info:
+      title: Bitcoin Street Store API
+      version: '1.0'
+    tags:
+      - name: agent-app
+      - name: merchant-ussd
+    paths:
+      /merchants:
+        get:
+          summary: Get all merchants
+          tags:
+            - agent-app
+          responses:
+            '200':
+              description: A list of merchants
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Merchant'
+        post:
+          summary: Invite a new merchant
+          tags:
+            - agent-app
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: See Merchant.name
+                    mobileNumber:
+                      type: string
+                      description: See Merchant.mobileNumber
+                    userName:
+                      type: string
+                      description: See Merchant.userName
+                    walletAddress:
+                      type: string
+                      description: See Merchant.walletAddress
+                    about:
+                      type: string
+                      description: See Merchant.about
+                    picture:
+                      type: string
+                      description: See Merchant.picture
+                  required:
+                    - name
+                    - mobileNumber
+          responses:
+            '201':
+              description: Merchant invited successfully
+      /merchants/{merchantId}:
+        get:
+          summary: Get a specific merchant
+          tags:
+            - agent-app
+            - merchant-ussd
+          parameters:
+            - in: path
+              name: merchantId
+              required: true
+              schema:
+                type: string
+                description: See Merchant.id
+          responses:
+            '200':
+              description: A specific merchant
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Merchant'
+        put:
+          summary: Update a merchant's status (upon invitation accept)
+          tags:
+            - merchant-ussd
+          parameters:
+            - in: path
+              name: merchantId
+              required: true
+              schema:
+                type: string
+                description: See Merchant.id
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      description: See Merchant.status
+          responses:
+            '200':
+              description: Merchant's status updated successfully
+      /merchants/{merchantId}/products:
+        get:
+          summary: Get all products for a specific merchant (stall)
+          tags:
+            - agent-app
+            - merchant-ussd
+          parameters:
+            - in: path
+              name: merchantId
+              required: true
+              schema:
+                type: string
+                description: See Merchant.id
+          responses:
+            '200':
+              description: A list of products for a specific merchant (stall)
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+      /merchants/{merchantId}/orders:
+        get:
+          summary: Get all orders for a specific merchant (stall)
+          tags:
+            - agent-app
+            - merchant-ussd          
+          parameters:
+            - in: path
+              name: merchantId
+              required: true
+              schema:
+                type: string
+                description: See Merchant.id
+          responses:
+            '200':
+              description: A list of orders for a specific merchant (stall)
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+      /products:
+        post:
+          summary: Create a new product
+          tags:
+            - agent-app
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    merchantId:
+                      type: string
+                      description: See Product.merchantId
+                    name:
+                      type: string
+                      description: See Product.name
+                    description: 
+                      type: string
+                      description: See Product.description
+                    images:
+                      type: array
+                      items:
+                        type: string
+                    price:
+                      type: number
+                      description: See Product.price
+                    quantity:
+                      type: integer
+                      description: See Product.quantity
+                  required:
+                    - merchantId
+                    - name
+                    - price
+          responses:
+            '201':
+              description: Product created successfully
+      /products/{productId}:
+        put:
+          summary: Update a specific product
+          tags:
+            - agent-app
+            - merchant-ussd
+          parameters:
+            - in: path
+              name: productId
+              required: true
+              schema:
+                type: string
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Product'
+          responses:
+            '200':
+              description: Product updated successfully
+      /orders/{orderId}:
+        put:
+          summary: Update an order's status
+          tags:
+            - merchant-ussd
+          parameters:
+            - in: path
+              name: orderId
+              required: true
+              schema:
+                type: string
+                description: See Order.id
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      description: See Order.status
+          responses:
+            '200':
+              description: Order's status updated successfully
+      
+    components:
+      schemas:
+        Merchant:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier of the merchant
+              example: 123a4567-b89c-123d-456e-789f123a4567
+            name:
+              type: string
+              description: Name of the merchant
+              example: Merchant X
+            mobileNumber:
+              type: string
+              description: Mobile phone of the merchant
+              example: +233123456789
+            userName:
+              type: string
+              description: TBD
+            walletAddress:
+              type: string
+              description: Address of the LN wallet address of the merchant
+              example: TBD
+            about:
+              type: string
+              description: Short intro of the merchant
+            picture:
+              type: string
+              description: URL to merchant's picture
+              example: URL1
+            status:
+              type: string
+              description: Status of the merchant, default = 'Draft'
+              enum:
+                - Draft
+                - Confirmed
+            stall:
+              description: Stall of the merchant (current limitation is 1 stall per merchant)
+              $ref: '#/components/schemas/Stall'
+        Stall:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Reuse Merchant.id
+            name:
+              type: string
+              description: Reuse Merchant.name
+            description:
+              type: string
+              description: Reuse Merchant.about
+            currency:
+              type: string
+              description: Currently, a constant 'sats'
+        Product:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier of the product
+              example: 123a4567-b89c-123d-456e-789f123a4567
+            stallId:
+              type: string
+              description: Id of the stall (merchant) that the product belongs to
+            name:
+              type: string
+              description: Name of the product
+              example: Product X
+            description: 
+              type: string
+              description: Description of the product
+            images:
+              type: array
+              items:
+                type: string
+              example: ['URL1', 'URL2']
+            price:
+              type: number
+              format: float
+              description: Price of the product
+              example: 3000
+            quantity:
+              type: integer
+              description: Quantity of the product
+              example: 10
+        Order:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier of the product
+              example: 123a4567-b89c-123d-456e-789f123a4567
+            stallId:
+              type: string
+              description: Id of the stall (merchant), from where the product are ordered
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  productId:
+                    type: string
+                    description: Id of the product
+                  quantity:
+                    type: integer
+                    description: Ordered quantity of the product
+            dateCreated:
+              type: string
+              format: date-time
+              description: Date and time of order creation (in ISO-8601 format)
+              example: 2023-10-16T12:15:47Z
+            dateModified:
+              type: string
+              format: date-time
+              description: Date and time of last order modification (in ISO-8601 format)
+              example: 2023-10-16T12:15:47Z
+            status:
+              type: string
+              description: TBD
