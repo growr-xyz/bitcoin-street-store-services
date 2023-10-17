@@ -76,7 +76,7 @@ module.exports = {
     })
 
     // MENU START
-    // Select automatically signup / createIdentity / Members Menu
+    // Select automatically createIdentity / Members Menu
 
     menu.startState({
       next: {
@@ -84,10 +84,10 @@ module.exports = {
           const { phoneNumber, ctx } = menu.args
           const user = (await ctx.call('users.find', { query: { phone: phoneNumber } }))[0]
           if (!user) {
-            return 'signup'
+            menu.end(messages[locale]['noUser'])
+            return
           }
           await menu.session.set('user', { ...user, ...{ ussdSession: menu.args.sessionId } })
-          if (user.state === ENUMS.userStates.SIGNUP) return 'members.createIdentity'
           return 'members.enterPin'
         }
       }
@@ -265,34 +265,7 @@ module.exports = {
     }
   },
   events: {
-    async 'ussd.signupComplete'({ user }) {
-      const messages = await require('../templates/locales/index')
-      const sms = {
-        to: user.phoneNumber,
-        message: messages[locale]['sms.signupComplete']()
-      }
-      await this.actions.sendSMS(sms)
-    },
 
-    async 'payment-intent.created'({ paymentIntent }) {
-      const { amount, currency, source, tan, borrowerId } = paymentIntent
-      const borrower = await this.broker.call('users.get', { id: borrowerId })
-      const sms = {
-        to: borrower.phone,
-        message: messages[locale]['sms.paymentIntent'](amount, currency, source, tan)
-      }
-      await this.actions.sendSMS(sms)
-    },
-
-    async 'payment-intent.confirmed'({ paymentIntent }) {
-      const { amount, currency, source, borrowerId, loanId } = paymentIntent
-      const borrower = await this.broker.call('users.get', { id: borrowerId })
-      const sms = {
-        to: borrower.phone,
-        message: messages[locale]['sms.paymentIntentConfirmed'](amount, currency, source)
-      }
-      await this.actions.sendSMS(sms)
-    },
   }
 }
 

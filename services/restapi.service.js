@@ -35,6 +35,7 @@ module.exports = {
   },
 
   methods: {
+
     isValidAuthorizationHeader(authorization, method, url) {
       console.log('authorization', authorization)
       const base64String = authorization.replace('Nostr ', '')
@@ -92,8 +93,7 @@ module.exports = {
       } else {
         return false
       }
-    }
-  },
+    },
 
   async authenticate(ctx, route, req) {
     const auth = req.headers['authorization']
@@ -119,22 +119,24 @@ module.exports = {
     }
 
 
-  }
+  },
+
 },
 
   actions: {
-  auth: true,
+  
     addMerchant: {
-    params: {
-      fullName: 'string|required',
+      auth: true,
+      params: {
+        fullName: 'string|required',
         phoneNumber: 'string|required',
-          username: 'string|required',
-            settlementAddress: 'string|required',
-              profilePic: 'url|optional',
-                website: 'url|optional',
-                  nip05: 'email|optional',
-                    banner: 'url|optional',
-                      about: 'string|optional'
+        username: 'string|required',
+        settlementAddress: 'string|required',
+        profilePic: 'url|optional',
+        website: 'url|optional',
+        nip05: 'email|optional',
+        banner: 'url|optional',
+        about: 'string|optional'
     },
       async handler(ctx) {
       // const {

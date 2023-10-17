@@ -256,95 +256,7 @@ module.exports = {
       }
     },
 
-    applyForLoan: {
-      params: {
-        projectId: 'string',
-        vcTypes: 'array',
-        //session: 'string',
-        loan: 'object'
-      },
-      async handler(ctx) {
-        const {
-          projectId,
-          vcTypes,
-          //session,
-          loan
-        } = Object.assign({}, ctx.params)
-        const { user } = ctx.meta
-        const identity = await this.adapter.findOne({
-          userId: user._id
-        })
-        if (!identity) {
-          throw new MoleculerClientError('User does not exist')
-        }
-        if (identity.ussdSession !== user.ussdSession) {
-          throw new MoleculerClientError('Session does not match')
-        }
-        const agent = await this.getAgent(identity)
-        const vp = await this.createPresentation(identity, agent, vcTypes)
-        const loanUpdated = {
-          ...loan,
-          ...{
-            userDid: identity.identity.did,
-            // disbursmentFee: 'string', // input
-            projectId
-          }
-        }
-
-        // TODO select verifier
-        try {
-          const loanId = await ctx.call('loan-book.approveLoan', {
-            userDid: identity.identity.did, vp, projectId, loan: loanUpdated
-          })
-          return loanId
-        } catch (e) {
-          // TODO capture error to log
-          throw new MoleculerClientError(e.message)
-        }
-      }
-    },
-
-    signLoanApproval: {
-      params: {
-        loanDraftId: 'string'
-        //session: 'string'
-      },
-      async handler(ctx) {
-        //const { loanDraftId, session } = Object.assign({}, ctx.params)
-        const { loanDraftId } = Object.assign({}, ctx.params)
-        const { user } = ctx.meta
-        const identity = await this.adapter.findOne({
-          userId: user._id
-        })
-        if (!identity) {
-          throw new MoleculerClientError('User does not exist')
-        }
-        if (identity.ussdSession !== user.ussdSession) {
-          throw new MoleculerClientError('Session does not match')
-        }
-        const agent = await this.getAgent(identity)
-        const signedKey = await agent.identity.signJWT({ nonce: loanDraftId })
-        const loanId = await ctx.call('loan-book.signLoan', {
-          signedKey, did: identity.identity.did
-        })
-        return loanId
-      }
-    },
-    getLoansForDid: {
-      async handler(ctx) {
-        const userId = ctx.meta.user._id;
-        const session = ctx.meta.user.ussdSession;
-        const identity = await this.adapter.findOne({ userId })
-        if (!identity) {
-          throw new MoleculerClientError('User does not exist')
-        }
-        if (identity.ussdSession !== session) {
-          throw new MoleculerClientError('Session does not match')
-        }
-        const loans = await ctx.call('loan-book.getLoansForDid', { userDid: identity.identity.did })
-        return loans
-      }
-    }*/
+  */
 
   },
   /**
@@ -396,13 +308,6 @@ module.exports = {
       const vp = await agent.VC.createPresentation(jwts)
       return vp
     },
-
-    // async getBestOffer(agent, invoice, vcs) {
-    //   const { amount } = invoice
-    //   const duration = 6 // TODO how to determine duration? // TODO [now] set it as env
-    //   const bestOffer = await agent.getBestOffer(amount, duration, vcs)
-    //   return bestOffer
-    // },
 
     // async getVcs(agent, types) {
     //   const user = await ctx.call('identity-resolver.find', {

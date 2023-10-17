@@ -15,6 +15,9 @@ const moment = require('moment')
 // const HASH_SALT_ROUND = 10
 // const TOKEN_EXPIRATION = 60 * 60 * 1000 // 1 hour
 
+let messages
+const locale = process.env.LOCALE || 'en'
+
 module.exports = {
   name: 'users',
 
@@ -276,13 +279,10 @@ module.exports = {
         const { id, phone } = Object.assign({}, ctx.params)
         const otp = await this.generateOTP(id)
         this.logger.info('user OTP::', otp) // TEMP
-        // TODO add different message for LENDER_CONSULTANT
         
         await ctx.call('ussd.sendSMS', {
           to: phone,
-          // eslint-disable-next-line max-len
-          // TODO [BSS] Change to english
-          message: `Hongera! Unastahiki kujiandikisha kwa huduma zetu! ${otp} ni nenosiri lako la mara moja. Tafadhali tuonyeshe SMS hii katika tukio linalofuata la usajili`
+          message: menu.con(messages[locale]['members.invite'](otp))
         })
         return true
       }
@@ -484,7 +484,7 @@ module.exports = {
      *
      * @param {String} token
      */
-  }
+  },
 
   // /**
   //  * Service created lifecycle event handler
@@ -496,9 +496,9 @@ module.exports = {
   // /**
   //  * Service started lifecycle event handler
   //  */
-  // async started() {
-  //   // this.agent = await GrowrAgent.getInstance()
-  // },
+   async started() {
+      messages = await require('../templates/locales/index');
+   },
 
   // /**
   //  * Service stopped lifecycle event handler
