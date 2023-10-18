@@ -218,11 +218,11 @@ module.exports = {
     },
 
     // TODO [BSS] Modify to new interface
-    addMerchant: {
+    inviteMerchant: {
       params: {
         name: { type: 'string', optional: true },
         mobileNumber: { type: 'string', required: true },
-        userName: { type: 'string', required: true },
+        username: { type: 'string', required: true },
         walletAddress: { type:'string', required: true },
         about: { type:'string', optional: true },
         picture: { type:'url', optional: true },
@@ -232,19 +232,13 @@ module.exports = {
       },
       async handler(ctx) {
         const {
-          fullName,
-          phone,
+          mobileNumber,
         } = Object.assign({}, ctx.params)
 
-        let user = await this.adapter.findOne({ phone })
+        let user = await this.adapter.findOne({ mobileNumbers })
 
         if (!user) {
-
-
-          user = await this.actions.create({
-            phone,
-            fullName: fullName || '',
-          })
+          user = await this.actions.create(ctx.params)
           return user
         } else {
           throw new MoleculerClientError('User with this phone number exists')

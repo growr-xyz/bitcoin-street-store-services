@@ -66,7 +66,7 @@ module.exports = function (collection) {
 
     schema.adapter = new MongoAdapter(process.env.MONGO_URI, {dbName: process.env.MONGO_DB_NAME});
     console.log(modelName(collection))
-    schema.model = Models[modelName(collection)];
+    // schema.model = Models[modelName(collection)];
     schema.collection = collection;
   } else if (process.env.NODE_ENV === 'test') {
     // NeDB memory adapter for testing
