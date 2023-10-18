@@ -2,10 +2,16 @@
 
 const fs = require("fs");
 const DbService = require("moleculer-db");
+const { capitalizeFirstLetter } = require("../middlewares/misc-util");
+const Models = require("../models")
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
+
+const modelName = (collection) => {
+  return `${capitalizeFirstLetter(collection)}Model`;
+}
 
 module.exports = function (collection) {
   const cacheCleanEventName = `cache.clean.${collection}`;
@@ -56,11 +62,11 @@ module.exports = function (collection) {
 
   if (process.env.MONGO_URI) {
     // Mongo adapter
-    const MongoAdapter = require("moleculer-db-adapter-mongo");
+    const MongoAdapter = require("moleculer-db-adapter-mongoose"); // require("moleculer-db-adapter-mongo");
 
-    schema.adapter = new MongoAdapter(process.env.MONGO_URI, {
-      poolSize: 10
-    }, process.env.MONGO_DB_NAME);
+    schema.adapter = new MongoAdapter(process.env.MONGO_URI, {dbName: process.env.MONGO_DB_NAME});
+    console.log(modelName(collection))
+    schema.model = Models[modelName(collection)];
     schema.collection = collection;
   } else if (process.env.NODE_ENV === 'test') {
     // NeDB memory adapter for testing
@@ -78,3 +84,4 @@ module.exports = function (collection) {
 
   return schema;
 };
+

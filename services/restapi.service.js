@@ -17,14 +17,21 @@ module.exports = {
       urlencoded: { extended: true }
     },
     routes: [{
-      path: '/',
-      authentication: true,
-
-      whitelist: [
-        'ussd.menu'
-      ],
+      path: '/api',
+      // authentication: true,
+      whitelist: ["**"],
+      // whitelist: [
+      //   'ussd.menu',
+      //   'users'
+      // ],
       aliases: {
-        'POST ussd': 'ussd.menu',
+        // 'REST /merchants': 'users',
+        'GET /merchants': 'users.find',
+        'POST /merchants': 'users.addMerchant',
+        'GET /merchants/:merchantId/products': 'products.find',
+        'POST /products': 'products.addProduct',
+        'POST /stalls': 'stalls.create',
+        'GET /products': 'products.find'
       },
       bodyParsers: {
         json: true,
@@ -98,7 +105,7 @@ module.exports = {
   async authenticate(ctx, route, req) {
     const auth = req.headers['authorization']
     const method = req.method // Extract method from request
-    const url = req.protocol + '://' + req.get('host') //+ req.originalUrl
+    const url = req.protocol + '://' + req.host //+ req.originalUrl
     console.log('authHeader', auth)
     if (!auth || !auth.startsWith('Nostr ')) {
       // Authentication failed

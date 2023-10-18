@@ -14,6 +14,8 @@ const moment = require('moment')
 // const { ObjectId } = require('mongodb') // or ObjectID 
 // const HASH_SALT_ROUND = 10
 // const TOKEN_EXPIRATION = 60 * 60 * 1000 // 1 hour
+const mongoose = require('mongoose')
+const { MerchantModel } = require('../models')
 
 let messages
 const locale = process.env.LOCALE || 'en'
@@ -73,7 +75,6 @@ module.exports = {
 
       */
 
-      password: { type: 'string', nullable: true, optional: true },
       email: { type: 'string', required: true },
       username: { type: 'string', required: true },
       avatar: { type: 'string', nullable: true, optional: true },
@@ -93,10 +94,11 @@ module.exports = {
     }
   },
   mixins: [
-    DbService('users'),
-    // ConfigLoader(["site.**", "mail.**", "accounts.**"])
+    DbService('merchant', MerchantModel)
+        // ConfigLoader(["site.**", "mail.**", "accounts.**"])
   ],
 
+  model: MerchantModel,
 
   /**
   * Dependencies
@@ -110,7 +112,12 @@ module.exports = {
     /**
      * Register Lender
      */
-
+    find: {
+      async handler(ctx) {
+        const entities = await this.adapter.find(ctx.params);
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+      }
+    },
 
     // TODO [BSS] Change to agent
     registerLenderConsultant: {
@@ -213,8 +220,15 @@ module.exports = {
     // TODO [BSS] Modify to new interface
     addMerchant: {
       params: {
-        fullName: { type: 'string', optional: true },
-        phone: { type: 'string', required: true },
+        name: { type: 'string', optional: true },
+        mobileNumber: { type: 'string', required: true },
+        userName: { type: 'string', required: true },
+        walletAddress: { type:'string', required: true },
+        about: { type:'string', optional: true },
+        picture: { type:'url', optional: true },
+        banner: { type:'url', optional: true },
+        website: { type:'url', optional: true },
+
       },
       async handler(ctx) {
         const {

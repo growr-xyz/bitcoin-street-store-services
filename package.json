@@ -1,0 +1,89 @@
+{
+  "name": "bss-services",
+  "version": "0.4.0",
+  "description": "Bitcoin Street Store backend services",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot --env services/**/*.service.js",
+    "start": "moleculer-runner",
+    "cli": "moleculer connect TCP",
+    "ci": "jest --watch",
+    "test": "jest --coverage -i",
+    "lint": "eslint services",
+    "dc:up": "docker-compose up --build -d",
+    "dc:logs": "docker-compose logs -f",
+    "dc:down": "docker-compose down"
+  },
+  "keywords": [
+    "microservices",
+    "moleculer",
+    "growr",
+    "bitcoin-street-store"
+  ],
+  "author": "https://github.com/growr-xyz",
+  "devDependencies": {
+    "@babel/preset-env": "^7.21.5",
+    "cheerio": "^1.0.0-rc.12",
+    "eslint": "^7.32.0",
+    "graphql-request": "^5.1.0",
+    "jest": "^29.5.0",
+    "jest-cli": "^29.5.0",
+    "moleculer-repl": "^0.6.6"
+  },
+  "dependencies": {
+    "@noble/secp256k1": "^2.0.0",
+    "africastalking": "^0.5.5",
+    "age-calculator": "^1.0.0",
+    "bcrypt": "^5.0.1",
+    "bignumber.js": "^9.1.1",
+    "clean-deep": "^3.4.0",
+    "corestore": "^6.0.2",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.1.1",
+    "dd-trace": "^1.5.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.2",
+    "extract-files": "^13.0.0",
+    "growr-agent-sdk": "^0.5.6",
+    "hyperbee": "^2.1.2",
+    "hypercore": "^10.0.0",
+    "hyperspace": "^3.19.0",
+    "hyperswarm": "^3.0.4",
+    "jaeger-client": "^3.19.0",
+    "json-rules-engine": "^6.1.2",
+    "jsonwebtoken": "^8.5.1",
+    "kind-of": "^6.0.3",
+    "moleculer": "^0.14.16",
+    "moleculer-auto-openapi": "^1.1.5",
+    "moleculer-db": "^0.8.15",
+    "moleculer-db-adapter-mongo": "^0.4.16",
+    "moleculer-db-adapter-mongoose": "^0.9.3",
+    "moleculer-http-client": "^0.4.2",
+    "moleculer-mail": "^2.0.0",
+    "moleculer-web": "^0.10.4",
+    "moment": "^2.29.4",
+    "nats": "^2.10.1",
+    "node-cron": "^3.0.2",
+    "node-disk-storage": "^0.0.6",
+    "nostr-tools": "^1.7.5",
+    "otp-generator": "^4.0.0",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
+    "random-token": "^0.0.8",
+    "shamirs-secret-sharing-ts": "^1.0.2",
+    "sub-encoder": "^2.1.1",
+    "ussd-builder": "^1.2.5",
+    "ussd-menu-builder": "^1.2.0",
+    "websocket-polyfill": "^0.0.3"
+  },
+  "engines": {
+    "node": ">= 12.x.x"
+  },
+  "jest": {
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node",
+    "rootDir": "./services",
+    "roots": [
+      "../test"
+    ]
+  }
+}
