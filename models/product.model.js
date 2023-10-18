@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-
+const { defaultStall } = require('./stall.model')
 // Define the Product schema
 const ProductSchema = new Schema(
   {
@@ -8,8 +8,8 @@ const ProductSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Stall",
       description: "Id of the stall (merchant) that the product belongs to",
+      default: defaultStall
     },
-
     name: {
       type: String,
       required: true,

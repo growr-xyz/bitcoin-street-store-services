@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 const { StallSchema } = require('./stall.model');
 // Define the Merchant schema
 const MerchantSchema = new Schema({
-  mobileNumber: {
+  phoneNumber: {
     type: String,
     required: true,
     description: 'Mobile phone of the merchant'

@@ -39,12 +39,13 @@ module.exports = {
     /**
      * Register Lender
      */
-    find: {
-      async handler(ctx) {
-        const entities = await this.adapter.find(ctx.params);
-        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
-      }
-    },
+    // find: {
+    //   async handler(ctx) {
+    //     const entities = await this.adapter.find(ctx.params);
+    //     return entities
+    //     // return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+    //   }
+    // },
 
 
     addStall: {
