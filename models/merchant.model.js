@@ -3,12 +3,6 @@ const { Schema } = mongoose;
 const { StallSchema } = require('./stall.model');
 // Define the Merchant schema
 const MerchantSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    description: 'Unique identifier of the merchant'
-  },
   mobileNumber: {
     type: String,
     required: true,
@@ -45,7 +39,9 @@ const MerchantSchema = new Schema({
     description: 'Website of the merchant or agent'
   },
   stalls:  [{
-    type: StallSchema
+    type: Schema.Types.ObjectId,
+    ref: 'Stalls',
+    description: 'Id of the stall'
   }],
   status: {
     type: String,
@@ -62,7 +58,18 @@ const MerchantSchema = new Schema({
   type : Schema.Types.ObjectId, 
   ref : 'Event', 
   description : 'Id of the NOSTR event'
-}, 
+},
+otp: {
+  value: {
+    type: String,
+  },
+  validUntil: {
+    type: String,
+  },
+  validated: {
+    type: Boolean,
+    default: false
+  }}
 }, { timestamps: true });
 
 

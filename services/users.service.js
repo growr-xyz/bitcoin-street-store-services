@@ -16,6 +16,7 @@ const moment = require('moment')
 // const TOKEN_EXPIRATION = 60 * 60 * 1000 // 1 hour
 const mongoose = require('mongoose')
 const { MerchantModel } = require('../models')
+const crypto = require('crypto');
 
 let messages
 const locale = process.env.LOCALE || 'en'
@@ -27,75 +28,77 @@ module.exports = {
   * Settings
   */
   settings: {
-    fields: {
-      _id: 'string',
-      role: {
-        type: 'enum',
-        values: Object.values(ENUMS.userRoles)
-      },
-      /* TODO [BSS] Create new model based on 
-      
-      1. nostr user profile:
+    // fields: {
+    //   _id: 'string',
+    //   role: {
+    //     type: 'enum',
+    //     values: Object.values(ENUMS.userRoles)
+    //   },
+    //   /* TODO [BSS] Create new model based on 
 
-      params: {
-        username: 'string|required',
-        about: 'string|optional',
-        picture: 'string|url|optional',
-        nip05: 'string|optional',
-        lud16: 'string|optional',
-        banner: 'string|url|optional',
-        website: 'string|optional'
-      },
+    //   1. nostr user profile:
 
-      2. LN Bits user:
+    //   params: {
+    //     username: 'string|required',
+    //     about: 'string|optional',
+    //     picture: 'string|url|optional',
+    //     nip05: 'string|optional',
+    //     lud16: 'string|optional',
+    //     banner: 'string|url|optional',
+    //     website: 'string|optional'
+    //   },
 
-      {
-        id: '6c120fa5debcf20ab0b44407af85c5e3',
-        name: 'madGrowr',
-        admin: 'bc297e571854bbd84f44f813aef85004',
-        email: 'mad@growr.xyz',
-        password: '!Gr3w',
-        wallets: [
-          {
-            id: '829c490cc5e1883a3a3465a25f26754a',
-            admin: 'bc297e571854bbd84f44f813aef85004',
-            name: 'nostr-merch-wallet',
-            user: '6c120fa5debcf20ab0b44407af85c5e3',
-            adminkey: '51837ea61b6592e99a34dc12e4901c8e',
-            inkey: '81c3e32c397891baa2a4b5be1ac3cbf6'
-          }
-        ]
-      }
+    //   2. LN Bits user:
 
-      3. USSD Controls - phone + session + otp + pin
+    //   {
+    //     id: '6c120fa5debcf20ab0b44407af85c5e3',
+    //     name: 'madGrowr',
+    //     admin: 'bc297e571854bbd84f44f813aef85004',
+    //     email: 'mad@growr.xyz',
+    //     password: '!Gr3w',
+    //     wallets: [
+    //       {
+    //         id: '829c490cc5e1883a3a3465a25f26754a',
+    //         admin: 'bc297e571854bbd84f44f813aef85004',
+    //         name: 'nostr-merch-wallet',
+    //         user: '6c120fa5debcf20ab0b44407af85c5e3',
+    //         adminkey: '51837ea61b6592e99a34dc12e4901c8e',
+    //         inkey: '81c3e32c397891baa2a4b5be1ac3cbf6'
+    //       }
+    //     ]
+    //   }
 
-      4. Agent props
+    //   3. USSD Controls - phone + session + otp + pin
 
-      5. Role
+    //   4. Agent props
 
-      */
+    //   5. Role
 
-      email: { type: 'string', required: true },
-      username: { type: 'string', required: true },
-      avatar: { type: 'string', nullable: true, optional: true },
-      fullName: { type: 'string', nullable: true, optional: true },
-      phone: { type: 'string', nullable: true },
-      otp: { type: 'string', nullable: true },
-      pin: { type: 'string', nullable: true },
-      state: {
-        type: 'enum',
-        values: Object.values(ENUMS.userStates)
-      },
-      ussdState: {
-        type: 'enum',
-        values: Object.values(ENUMS.ussdStates)
-      },
-      ussdSession: { type: 'sring', nullable: true, optional: true },
-    }
+    //   */
+
+    //   email: { type: 'string', required: true },
+    //   username: { type: 'string', required: true },
+    //   avatar: { type: 'string', nullable: true, optional: true },
+    //   fullName: { type: 'string', nullable: true, optional: true },
+    //   phone: { type: 'string', nullable: true },
+    //   otp: { type: 'string', nullable: true },
+    //   pin: { type: 'string', nullable: true },
+    //   state: {
+    //     type: 'enum',
+    //     values: Object.values(ENUMS.userStates)
+    //   },
+    //   ussdState: {
+    //     type: 'enum',
+    //     values: Object.values(ENUMS.ussdStates)
+    //   },
+    //   ussdSession: { type: 'sring', nullable: true, optional: true },
+    // }
+    fields: ["_id", "mobileNumber", "username", "name", "walletAddress", "about", "picture", "banner", "website", "stalls", "status", "createdBy", "eventId"],
+
   },
   mixins: [
     DbService('merchant', MerchantModel)
-        // ConfigLoader(["site.**", "mail.**", "accounts.**"])
+    // ConfigLoader(["site.**", "mail.**", "accounts.**"])
   ],
 
   model: MerchantModel,
@@ -223,11 +226,11 @@ module.exports = {
         name: { type: 'string', optional: true },
         mobileNumber: { type: 'string', required: true },
         username: { type: 'string', required: true },
-        walletAddress: { type:'string', required: true },
-        about: { type:'string', optional: true },
-        picture: { type:'url', optional: true },
-        banner: { type:'url', optional: true },
-        website: { type:'url', optional: true },
+        walletAddress: { type: 'string', required: true },
+        about: { type: 'string', optional: true },
+        picture: { type: 'url', optional: true },
+        banner: { type: 'url', optional: true },
+        website: { type: 'url', optional: true },
 
       },
       async handler(ctx) {
@@ -235,10 +238,16 @@ module.exports = {
           mobileNumber,
         } = Object.assign({}, ctx.params)
 
-        let user = await this.adapter.findOne({ mobileNumbers })
+        let user = await this.adapter.findOne({ mobileNumber })
 
         if (!user) {
-          user = await this.actions.create(ctx.params)
+          user = await this.actions.create({
+            ...ctx.params,
+            id: crypto.randomUUID(),
+            createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+          })
+          const otp = await this.generateOTP(user._id)
+          this.logger.info('user OTP::', otp) // TEMP
           return user
         } else {
           throw new MoleculerClientError('User with this phone number exists')
@@ -246,7 +255,7 @@ module.exports = {
       }
     },
 
-        // TODO [BSS] Modify to new interface
+    // TODO [BSS] Modify to new interface
     updateMerchant: {
       params: {
         phone: { type: 'string', required: true },
@@ -287,7 +296,7 @@ module.exports = {
         const { id, phone } = Object.assign({}, ctx.params)
         const otp = await this.generateOTP(id)
         this.logger.info('user OTP::', otp) // TEMP
-        
+
         await ctx.call('ussd.sendSMS', {
           to: phone,
           message: menu.con(messages[locale]['members.invite'](otp))
@@ -470,10 +479,12 @@ module.exports = {
       const otpString = await bcrypt.hash(value, 10)
       const otp = {
         value: otpString,
-        validUntil,
+        validUntil: `${validUntil}`,
         validated: false
       }
-      await this.adapter.updateById(_id, { $set: { otp } })
+
+      await this.actions.update({ id: _id, update: { $set: { otp } } })
+
       return value
     },
 
@@ -504,9 +515,9 @@ module.exports = {
   // /**
   //  * Service started lifecycle event handler
   //  */
-   async started() {
-      messages = await require('../templates/locales/index');
-   },
+  async started() {
+    messages = await require('../templates/locales/index');
+  },
 
   // /**
   //  * Service stopped lifecycle event handler

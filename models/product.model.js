@@ -3,12 +3,6 @@ const { Schema } = mongoose;
 
 // Define the Product schema
 const ProductSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    description: 'The unique identifier of the product'
-  },
   stallId: {
     type : Schema.Types.ObjectId, 
     ref : 'Stall', 

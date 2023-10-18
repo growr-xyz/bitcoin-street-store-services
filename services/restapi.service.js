@@ -27,11 +27,12 @@ module.exports = {
       aliases: {
         // 'REST /merchants': 'users',
         'GET /merchants': 'users.find',
-        'POST /merchants': 'users.addMerchant',
+        'POST /merchants': 'users.inviteMerchant',
         'GET /merchants/:merchantId/products': 'products.find',
         'POST /products': 'products.addProduct',
         'POST /stalls': 'stalls.create',
-        'GET /products': 'products.find'
+        'GET /products': 'products.find',
+        'PUT /merchants/:merchantId': 'users.update',
       },
       bodyParsers: {
         json: true,
@@ -111,14 +112,11 @@ module.exports = {
       // Authentication failed
       throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN)
     }
-
     const pubkey = this.isValidAuthorizationHeader(auth, method, url)
-
     if (pubkey) {
       // Authentication succeeded
       // const user = { pubkey } // You might populate this object with additional user details if needed
       const user = await ctx.call('users.resolveUser', { pubkey })
-
       return user
     } else {
       // Authentication failed
