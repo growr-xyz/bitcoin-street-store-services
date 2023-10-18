@@ -80,18 +80,22 @@ module.exports = {
       next: {
         '': async () => {
           const { phoneNumber, ctx } = menu.args
-          const user = (await ctx.call('users.find', { query: { phone: phoneNumber } }))[0]
+          const user = (await ctx.call('users.find', { query: { mobileNumber: phoneNumber } }))[0]
           if (!user) {
             menu.end(messages[locale]['noUser'])
             return
           }
           await menu.session.set('user', { ...user, ...{ ussdSession: menu.args.sessionId } })
-          return 'members.enterPin'
+          if (user.status == 'Invited') {
+            return 'members.createIdentity'
+          } else {
+            return 'members.enterPin'
+          }
         }
       }
     })
 
-   // members menues
+   // members menus
 
     menu.state('members.enterPin', {
       run: async () => {
@@ -139,10 +143,12 @@ module.exports = {
         const user = await menu.session.get('user')
         const otp = menu.val
         try {
+          /*
           if (!(await ctx.call('users.validateOtp', { user, otp }))) {
             menu.end(messages[locale]['wrongOtp'])
             return
           }
+          */ // TODO: uncomment this
           menu.con(messages[locale]['members.createIdentity.setPin'])
         } catch (e) {
           menu.end(e.message)
@@ -176,6 +182,8 @@ module.exports = {
           return
         }
         const user = await menu.session.get('user')
+        
+        /*
         await ctx.call('users.setPin', { user, pin })
 
         // TODO [BSS] create lnbits wallet + identity ?
@@ -187,15 +195,249 @@ module.exports = {
         // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
         user.state = ENUMS.userStates.REGISTERED
         await ctx.call('users.update', { id: user._id, ...user })
-        // await ctx.call('identity.setSession') // TODO - uncomment this
+        await ctx.call('identity.setSession') 
+        */ // TODO - uncomment this
         await menu.session.set('user', user)
         await menu.session.set('pinChecked', true)
         menu.con(messages[locale]['members.createIdentity.identityCreated'])
       },
       next: {
-
         '1': 'members.createIdentity.profile',
         '0': 'end'
+      }
+    })
+
+    menu.state('members.createIdentity.profile', {
+      run: async () => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        menu.con(messages[locale]['members.createIdentity.profile'](user.username, user.walletAddress))
+      },
+      next: {
+        // eslint-disable-next-line no-useless-escape
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.storeChanges', {
+      run: async() => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        // get pending changes
+        let changes = [];
+        // TODO - get pending changes from products.service
+        menu.con(messages[locale]['members.storeChanges'](changes))
+      },
+      next: {
+        '1': 'members.storeChanges.confirmed',
+        '0': 'end'
+      }
+    })
+
+    menu.state('members.storeChanges.confirmed', {
+      run: async() => {
+        // TODO - change status of pending products to confirmed
+        menu.con(messages[locale]['members.storeChanges.confirmed'])
+      },
+      next: {
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.products', {
+      run: async() => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        // get merchant products
+        let products = [];
+        // TODO - get products from products.service
+        menu.con(messages[locale]['members.products'](products))
+      },
+      next: {
+        '*\\d': 'members.products.quantity',
+        '0': 'end'
+      }
+    })
+
+    menu.state('members.products.quantity', {
+      run: async() => {
+        const productNo = menu.val
+        await menu.session.set('productNo', productNo);
+        // get product details
+        let product = {
+          productName: '',
+          quantity: 0
+        };
+        // TODO - get product details from products.service by productNo
+        menu.con(messages[locale]['members.products.quantity'](product.productName, product.quantity))
+      },
+      next: {
+        '*\\d': 'members.products.quantityUpdated',
+        '0': 'end'
+      }
+    })
+
+    menu.state('members.products.quantityUpdated', {
+      run: async() => {
+        const productNo = await menu.session.get('productNo');
+        const quantity = menu.val
+        // TODO - update quantity by productNo
+        menu.con(messages[locale]['members.products.quantityUpdated'])
+      },
+      next: {
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.orders', {
+      run: async() => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        // get merchant orders
+        let orders = [];
+        // TODO - get orders from orders.service
+        menu.con(messages[locale]['members.orders'](orders))
+      },
+      next: {
+        '*\\d': 'members.orders.order',
+        '0': 'end'
+      }
+    }) 
+    
+    menu.state('members.orders.order', {
+      run: async() => {
+        const orderNo = menu.val
+        await menu.session.set('orderNo', orderNo);
+        // get order details
+        let order = {
+          products: [], 
+          quantity: 0, 
+          currency: 'sats', 
+          price: 0, 
+          paymentStatus: 'Paid', 
+          user: '', 
+          message: ''
+        };
+        // TODO - get order details from orders.service by orderNo
+        menu.con(messages[locale]['members.orders.order'](
+          order.products, 
+          order.currency, 
+          order.price, 
+          order.paymentStatus, 
+          order.user, 
+          order.message
+        ))
+      },
+      next: {
+        '1': 'members.orders.orderMessage',
+        '2': 'members.orders.shipping',
+        '0': 'end'
+      }
+    })
+
+    menu.state('members.orders.orderMessage', {
+      run: async() => {
+        const orderNo = await menu.session.get('orderNo');
+        let orderUser = '';
+        // TODO: get user from order no
+        menu.con(messages[locale]['members.orders.orderMessage'](orderUser))
+      },
+      next: {
+        '*\\s': 'members.orders.orderMessageSent'
+      }
+    })
+
+    menu.state('members.orders.orderMessageSent', {
+      run: async() => {
+        const orderNo = await menu.session.get('orderNo');
+        let orderUser = '';
+        // TODO: get user from order no
+        const message = menu.val
+        // TODO - send message to user from orderNo
+        menu.con(messages[locale]['members.orders.orderMessageSent'](orderUser))
+      },
+      next: {
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.orders.shipping', {
+      run: async() => {
+        const orderNo = await menu.session.get('orderNo');
+        let orderUser = '';
+        // TODO: change order status of orderNo to shipped
+        menu.con(messages[locale]['members.orders.shipping'](orderUser))
+      },
+      next: {
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.wallet', {
+      run: async () => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        let wallet = ''
+        let balance = 0
+        //TODO - get balance of wallet
+        menu.con(messages[locale]['members.wallet'](wallet, balance))
+      },
+      next: {
+        // eslint-disable-next-line no-useless-escape
+        '1': 'members.wallet.change'
+      }
+    })
+
+    menu.state('members.wallet.change', {
+      run: async() => {
+        menu.con(messages[locale]['members.wallet.change'])
+      },
+      next: {
+        '*\\s': 'members.wallet.changedAddress',
+        '0': 'end'
+      }
+    })
+
+     menu.state('members.wallet.changedAddress', {
+      run: async () => {
+        const user = await menu.session.get('user')
+        const walletAddress = menu.val
+        // TODO - update walletAddress of the user
+        menu.con(messages[locale]['members.wallet.changedAddress'](uwalletAddress))
+      },
+      next: {
+        // eslint-disable-next-line no-useless-escape
+        '1': 'members.mainMenu'
+      }
+    })
+
+    menu.state('members.profile', {
+      run: async () => {
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        } 
+        menu.con(messages[locale]['members.profile'](user.username, user.walletAddress))
+      },
+      next: {
+        // eslint-disable-next-line no-useless-escape
+        '1': 'members.mainMenu'
       }
     })
 
@@ -225,7 +467,7 @@ module.exports = {
         ctx.meta.$responseType = 'text/plain'
         const user = (await ctx.call('users.find', {
           query: {
-            phone: args.phoneNumber
+            mobileNumber: args.phoneNumber
           }
         }))[0]
         ctx.meta.user = { ...user, ...{ ussdSession: args.sessionId } }
