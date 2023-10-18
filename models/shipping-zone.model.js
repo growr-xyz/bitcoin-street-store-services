@@ -2,12 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const ShippingZoneSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    description: 'The unique identifier of the shipping zone'
-  },
+
   name: {
     type: String,
     required: true,

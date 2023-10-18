@@ -5,12 +5,7 @@ const { ShippingZoneSchema } = require('./shipping-zone.model');
 
 // Define the Stall schema
 const StallSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    description: 'The unique identifier of the stall'
-  },
+
   name: {
     type: String,
     required: true,
