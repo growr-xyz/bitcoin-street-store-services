@@ -23,15 +23,13 @@ module.exports = {
   methods: {
     async checkPin(user, ctx, menu) {
       if (await menu.session.get('pinChecked')) {
-        !!(user.role === ENUMS.userRoles.BORROWER) && await ctx.call('identity.setSession')
+        //!!(await ctx.call('identity.setSession') // TODO: uncomment this
         return true
       }
       const pin = (menu.val.length === 4) ? menu.val : menu.args.text.split('*')[0]
       if (await ctx.call('users.checkPin', { user, pin })) {
         await menu.session.set('pinChecked', true)
-        if (user.role === ENUMS.userRoles.BORROWER) {
-          await ctx.call('identity.setSession')
-        }
+        // await ctx.call('identity.setSession') //TODO: uncomment this
         // TODO: set user in meta and remove from "menu" action
         return true
       } else {
@@ -112,12 +110,14 @@ module.exports = {
           menu.end(messages[locale]['wrongPin'])
           return
         }
-        menu.con(messages[locale]['members.mainMenu'](user.fullName))
+        menu.con(messages[locale]['members.mainMenu'](user.username))
       },
       next: {
-        '1': 'members.confirmStoreChanges',
-        '2': 'members....',
-        // TODO [BSS] add more choices
+        '1': 'members.storeChanges',
+        '2': 'members.products',
+        '3': 'members.orders',
+        '4': 'members.wallet',
+        '5': 'members.profile',
         '0': 'end',
       }
     })
@@ -187,23 +187,14 @@ module.exports = {
         // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
         user.state = ENUMS.userStates.REGISTERED
         await ctx.call('users.update', { id: user._id, ...user })
-        await ctx.call('identity.setSession')
+        // await ctx.call('identity.setSession') // TODO - uncomment this
         await menu.session.set('user', user)
         await menu.session.set('pinChecked', true)
         menu.con(messages[locale]['members.createIdentity.identityCreated'])
       },
       next: {
 
-        // TODO [BSS] next menu items? check product list
-        // check waiting for signature [drafts]
-        // create identity should also be draft from agent or be self typed?
-        // from product list to select product and update qty
-        // check messages for new deliveries
-        // update delivery status
-        // should we have images preset or allow agent to shoot and upload?
-        
-
-
+        '1': 'members.createIdentity.profile',
         '0': 'end'
       }
     })

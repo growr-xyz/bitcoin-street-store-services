@@ -123,7 +123,7 @@ module.exports = {
     },
 
     // TODO [BSS] Change to agent
-    registerLenderConsultant: {
+    /*registerLenderConsultant: {
       params: {
         phone: { type: 'string', required: true },
         fullName: { type: 'string', required: true },
@@ -151,7 +151,7 @@ module.exports = {
         return this.actions.create(user)
       }
     },
-
+    */
 
 
     setPin: {

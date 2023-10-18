@@ -37,8 +37,7 @@ module.exports = {
   Do not share it with anyone, including Bitcoin Street Store agents. 
   `,
   'members.createIdentity.confirmPin': 'Confirm your PIN code:',
-  'members.createIdentity.identityCreated': `Your PIN was set and your merchant identity is created.
-
+  'members.createIdentity.identityCreated': `Your PIN was set and your merchant identity is created.\n
 1. Continue
 0. Exit`,
   'members.createIdentity.profile': (name, username, about, wallet) => {

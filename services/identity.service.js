@@ -8,8 +8,8 @@
 const { GrowrAgent } = require('growr-agent-sdk')
 const DbService = require('../mixins/db.mixin')
 const { MoleculerClientError } = require('moleculer').Errors
-const utils = require('../middlewares/misc-util');
-const ENUMS = require('../config/enums');
+//const utils = require('../middlewares/misc-util');
+// const ENUMS = require('../config/enums');
 const identityMixin = require('../mixins/identity')
 const NOSTRService = require('../nostr/moleculer-nostr-service')
 // const CryptoJS = require('crypto-js')
