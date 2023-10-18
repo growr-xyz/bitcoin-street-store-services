@@ -17,7 +17,7 @@ const StallSchema = new Schema({
   },
   currency: {
     type: String,
-    default: 'sats',
+    default: 'SATS',
     description: 'The currency used by the stall'
   },
   shipping: [{
@@ -44,7 +44,14 @@ const StallSchema = new Schema({
     type: String,
     required: true,
     description: 'Unique identifier of the agent who created the merchant',
-  }
+  },
+  merchantId: {
+    type : Schema.Types.ObjectId, // should be pubkey 
+    required : true,
+    ref : 'Merchant', 
+    description : 'Id of the merchant that the product belongs to'
+  },
+
 }, { timestamps: true });
 
 module.exports = {

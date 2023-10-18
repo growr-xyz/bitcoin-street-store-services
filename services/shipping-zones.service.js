@@ -7,12 +7,12 @@
 
 const DbService = require('../mixins/db.mixin')
 const ENUMS = require('../config/enums')
-const { ProductModel } = require('../models')
+const { ShippingZoneModel } = require('../models')
 
 const locale = process.env.LOCALE || 'en'
 
 module.exports = {
-  name: 'products',
+  name: 'shipping-zones',
 
   /**
   * Settings
@@ -21,11 +21,11 @@ module.exports = {
 
   },
   mixins: [
-    DbService('product', ProductModel),
-    // ConfigLoader(["site.**", "mail.**", "accounts.**"])
+    DbService('shipping-zone', ShippingZoneModel),
+        // ConfigLoader(["site.**", "mail.**", "accounts.**"])
   ],
 
-  model: ProductModel,
+  model: ShippingZoneModel,
 
   /**
   * Dependencies
@@ -39,20 +39,21 @@ module.exports = {
     /**
      * Register Lender
      */
-    // find: {
-    //   async handler(ctx) {
-    //     const entities = await this.adapter.find(ctx.params);
-    //     return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
-    //   }
-    // },
-
-    addProduct: {
+    find: {
       async handler(ctx) {
-        const entity = await this.actions.create({
-          ...ctx.params, createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
-        });
-        // return await this.transformDocuments(ctx, {}, entity);
-        return entity;
+        const entities = await this.adapter.find(ctx.params);
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+      }
+    },
+
+
+    addShippingZone: {
+      params: {
+        
+      },
+      async handler(ctx) {
+        const entity = await this.actions.create(ctx.params);
+        return entity
       }
     }
 
@@ -60,7 +61,7 @@ module.exports = {
   },
   hooks: {
     before: {
-
+    
     },
 
     after: {
@@ -93,7 +94,7 @@ module.exports = {
   // /**
   //  * Service started lifecycle event handler
   //  */
-  async started() { },
+   async started() {},
 
   // /**
   //  * Service stopped lifecycle event handler
