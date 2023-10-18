@@ -1,122 +1,34 @@
-
-## USSD menus
-
-1. Welcome SMS
-   
-```
-You have been invited to join Bitcoin Street Store. Dial #2121 to create your profile. Use OTP: 1234
-```
-
-2. ```
-   You are about to create a new identity. Enter OTP
-   ```
-3. ```
-   Set PIN 
-   ```
-4. ```
-   Confirm PIN
-   ```
-5. ```
-   PIN Set. Identity created.
-   1. Continue 
-   0.Exit
-   ```
-6. ```
-   Your profile info:
-   Name: Merchant Display Name
-   Username: Merchant username
-   About: Store/Merchant about info
-   Settlement Wallet: merchant@8333.mobi
-   
-   1. Confirm
-   2. Exit
-   ```
-7. ```
-   Congratulations! You have successfully created your identity! You can now create your show with your Agent!
-   ```   
-8. SMS to confirm store details:
-   ```
-   Please dial #2121 to confirm store details. 
-   ```
-9. Main Menu
-```
-Welcome, Merchant!
-
-1. Confirm store changes - 1 pending change
-2. Change product quantity - 3 products below 2 pcs 
-3. Orders - 1 pending order
-4. Store wallet - 21000 sats 
-0. Exit
-```
-10. Confirm store changes
-```
-Type: Stall
-Name: Stall Name
-Description: Stall description
-## Shipping zones: Shipping zones ## (do we need this)
-
-1. Confirm
-0. Back
-----------------------------------------------------------------
-Type: Product
-Name: Product Name
-Description: Stall description
-Categories: category, products, bitcoin, cashew
-Quantity: quantity
-## Shipping zones: Shipping zones ## (do we need this)
-
-1. Confirm
-0. Back
-```
-
-11. Add product quantity
-```
-Current stock:
-
-1. Product A - 2 pcs 
-2. Product B - 0 pcs
-3. .....
-
-Enter: product number to change quantity
-----------------------------------------------------------------
-Product A:
-categories
-Description
-
-current quantity: 2
-
-Enter new quantity:
-```
-
-12. Orders
-```
-Pending:
-
-1. Product A x2 (paid)
-2. 
-
-Dial number of order to proceed.
-0. to Exit
-99. To see fulfilled orders
-----------------------------------------------------------------
-Name          QTY    Total
-Product A   x   2   1000 sats
-Paid: yes
-User: MadGrowr
-Message: Hi I need it quickly.
-
-1. Reply to user
-2. Ship order
-3. Exit and leave the order pending
-0. Exit and make the order seen
-```
-
-13. Store Wallet
-
-```
-Current balance: 21000
-
-1. Withdraw to kumi@8333.mobi
-2. Change withdraw wallet 
-3. Get Merchant keys (NOSTR)
+```mermaid
+stateDiagram
+state if_state <<choice>>
+[*] --> if_state: phone number exists?
+	if_state --> [*]: not found
+    if_state --> members.createIdentity: user invited & without identity
+		members.createIdentity --> members.createIdentity.setPin: "...*[otp]#"
+		members.createIdentity.setPin --> members.createIdentity.confirmPin: "...*[pin]#"
+		members.createIdentity.confirmPin --> members.createIdentity.identityCreated: "...*[pin]#"
+		members.createIdentity.identityCreated --> members.createIdentity.profile: "...*1# - Continue" \n "...*0#" - Exit
+        members.createIdentity.profile --> []: "...*1#" - Continue to Main Menu \n "...*0#" - Exit
+    if_state --> members.enterPin: user has identity
+		members.enterPin --> members.mainMenu: "...*[pin]#"
+        members.mainMenu --> members.storeChanges: "...*1#" - Store changes
+            members.storeChanges --> members.storeChanges.confirmed: "...*1#" - Confirm \n "...*0#" - Cancel
+            members.storeChanges.confirmed --> []: "...*1#" - Back to Main menu
+        members.mainMenu --> members.products: "...*2#" - Product quantity
+            members.products --> members.product.quantity: "...*[productNo]#"
+            members.product.quantity --> members.product.quantityUpdated: "...*[quantity]#"
+            members.product.quantityUpdated --> []: "...*1#" - Back to Main menu
+        members.mainMenu --> members.orders: "...*3#" - Orders
+            members.orders --> members.orders.order: "...*[orderNo]#"
+            members.orders.order --> members.orders.orderMessage: "...*1#" - Reply to user
+                members.orders.orderMessage --> members.orders.orderMessageSent: "...*[messageText]#"
+                members.orders.orderMessageSent --> []: "...*1#" - Back to Main menu
+            members.orders.order --> members.orders.shipping: "...*2#" - Ship order
+                members.orders.shipping --> []: "...*1#" - Back to Main menu
+        members.mainMenu --> members.wallet: "...*4#" - Wallet
+            members.wallet --> members.wallet.change: "...*1#" - Change withdraw address
+            members.wallet.change --> members.wallet.changedAddress: "...*[walletAddress]#"
+            members.wallet.changedAddress --> []: "...*1#" - Back to Main menu
+        members.mainMenu --> members.profile: "...*5#" - Profile
+            members.profile --> []: "...*1#" - Back to Main menu
 ```
