@@ -40,7 +40,7 @@ const MerchantSchema = new Schema({
   },
   stalls:  [{
     type: Schema.Types.ObjectId,
-    ref: 'Stalls',
+    ref: 'Stall',
     description: 'Id of the stall'
   }],
   status: {

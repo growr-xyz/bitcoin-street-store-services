@@ -122,6 +122,15 @@ module.exports = {
       }
     },
 
+
+    update: {
+      async handler(ctx) {
+        console.log(ctx.params)
+        return
+      }
+    },
+  
+
     // TODO [BSS] Change to agent
     registerLenderConsultant: {
       params: {
@@ -483,7 +492,11 @@ module.exports = {
         validated: false
       }
 
-      await this.actions.update({ id: _id, update: { $set: { otp } } })
+      console.log('OTP::', otp) // TEMP
+      // await this.actions.update({ id: _id, update: { $set: { otp } } })
+      await this.adapter.updateById(_id, { $set: { otp } })
+
+      // await this.actions.update({ id: _id, update: { $set: { otp } } })
 
       return value
     },

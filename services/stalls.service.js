@@ -46,10 +46,11 @@ module.exports = {
       }
     },
 
-    addProduct: {
+
+    addStall: {
       async handler(ctx) {
         const entity = await this.actions.create(ctx.params);
-        return await this.transformDocuments(ctx, {}, entity.populate('stall'));
+        return entity
       }
     }
 

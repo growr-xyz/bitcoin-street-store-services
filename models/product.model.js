@@ -8,6 +8,7 @@ const ProductSchema = new Schema({
     ref : 'Stall', 
     description : 'Id of the stall (merchant) that the product belongs to'
   },
+
   name: {
     type: String,
     required: true,
@@ -22,15 +23,18 @@ const ProductSchema = new Schema({
   }],
   currency: {
     type: String,
-    description: 'The currency used by the product'
+    description: 'The currency used by the product',
+    default: 'SAT'
   },
   price: {
     type: Number,
-    description: 'The cost of the product'
+    description: 'The cost of the product',
+    default: 0
   },
   quantity: {
     type: Number,
-    description: 'The available items of the product'
+    description: 'The available items of the product',
+    default: 0
   },
   specs: [{
     type: [String]
@@ -38,7 +42,6 @@ const ProductSchema = new Schema({
   shipping: [{
     id: {
       type: String,
-      required: true,
       description: 'The unique identifier of the shipping zone'
     },
     cost: {
@@ -61,7 +64,14 @@ const ProductSchema = new Schema({
     type: String,
     required: true,
     description: 'Unique identifier of the agent who created the merchant',
- }
+ },
+ merchantId: {
+  type : Schema.Types.ObjectId, // should be pubkey 
+  required : true,
+  ref : 'Merchant', 
+  description : 'Id of the merchant that the product belongs to'
+},
+
 
 
 
