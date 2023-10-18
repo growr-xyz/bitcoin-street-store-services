@@ -6,6 +6,7 @@ const ShippingZoneSchema = new Schema(
     name: {
       type: String,
       required: true,
+      default: "Worldwide - Online",
       description: "The name of the shipping zone",
     },
     cost: {
@@ -18,35 +19,18 @@ const ShippingZoneSchema = new Schema(
         type: String,
         default: "Worldwide - Online",
       },
-    ],
-    status: {
-      type: String,
-      enum: ["Draft", "Review", "Active", "Deactivated"],
-      default: "Draft",
-      description: "Status of the zone",
-    },
-    eventId: {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
-      description: "Id of the NOSTR event",
-    },
-    createdBy: {
-      type: String,
-      required: true,
-      default: "AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98",
-      description: "Unique identifier of the agent who created the merchant",
-    },
-    merchantId: {
-      type: Schema.Types.ObjectId, // should be pubkey
-      required: true,
-      ref: "Merchant",
-      description: "Id of the merchant that the product belongs to",
-    },
-  },
-  { timestamps: true }
+    ]
+  }
 );
+
+const defaultShippingZone = {
+  name: "Worldwide - Online",
+  cost: 0,
+  regions: ["Worldwide - Online"],
+}
 
 module.exports = {
   ShippingZoneSchema: ShippingZoneSchema,
-  ShippingZoneModel: mongoose.model("ShippingZone", ShippingZoneSchema),
+  defaultShippingZone,
+  // ShippingZoneModel: mongoose.model("ShippingZone", ShippingZoneSchema),
 };

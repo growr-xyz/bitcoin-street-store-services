@@ -34,9 +34,9 @@
                     name:
                       type: string
                       description: See Merchant.name
-                    mobileNumber:
+                    phoneNumber:
                       type: string
-                      description: See Merchant.mobileNumber
+                      description: See Merchant.phoneNumber
                     userName:
                       type: string
                       description: See Merchant.userName
@@ -51,7 +51,7 @@
                       description: See Merchant.picture
                   required:
                     - name
-                    - mobileNumber
+                    - phoneNumber
           responses:
             '201':
               description: Merchant invited successfully
@@ -242,7 +242,7 @@
               type: string
               description: Name of the merchant
               example: Merchant X
-            mobileNumber:
+            phoneNumber:
               type: string
               description: Mobile phone of the merchant
               example: +233123456789

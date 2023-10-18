@@ -37,13 +37,13 @@ module.exports = {
           "GET /merchants/:merchantId/products": "products.list",
           "POST /merchants/:merchantId/products": "products.addProduct",
           "PUT /merchants/:merchantId/products/:id": "products.update",
-          "GET /merchants/:merchantId/stalls": "stalls.list",
-          "POST /merchants/:merchantId/stalls": "stalls.addStall",
-          "PUT /merchants/:merchantId/stalls/:id": "stalls.update",
-          "GET /merchants/:merchantId/shipping-zones": "shipping-zones.list",
-          "POST /merchants/:merchantId/shipping-zones": "shipping-zones.create",
-          "PUT /merchants/:merchantId/shipping-zones/:id":
-            "shipping-zones.update",
+          // "GET /merchants/:merchantId/stalls": "stalls.list",
+          // "POST /merchants/:merchantId/stalls": "stalls.addStall",
+          // "PUT /merchants/:merchantId/stalls/:id": "stalls.update",
+          // "GET /merchants/:merchantId/shipping-zones": "shipping-zones.list",
+          // "POST /merchants/:merchantId/shipping-zones": "shipping-zones.create",
+          // "PUT /merchants/:merchantId/shipping-zones/:id":
+          //   "shipping-zones.update",
         },
         bodyParsers: {
           json: true,

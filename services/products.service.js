@@ -48,8 +48,11 @@ module.exports = {
 
     addProduct: {
       async handler(ctx) {
+        const stall = await ctx.call('stalls.find', { merchantId: ctx.params.merchantId });
         const entity = await this.actions.create({
-          ...ctx.params, createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+          ...ctx.params, 
+          createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+          stallId: stall[0]._id,
         });
         // return await this.transformDocuments(ctx, {}, entity);
         return entity;

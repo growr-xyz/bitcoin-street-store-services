@@ -17,6 +17,7 @@ const moment = require('moment')
 const mongoose = require('mongoose')
 const { MerchantModel } = require('../models')
 const crypto = require('crypto');
+const { defaultStall } = require('../models/stall.model')
 
 let messages
 const locale = process.env.LOCALE || 'en'
@@ -93,7 +94,7 @@ module.exports = {
     //   },
     //   ussdSession: { type: 'sring', nullable: true, optional: true },
     // }
-    fields: ["_id", "mobileNumber", "username", "name", "walletAddress", "about", "picture", "banner", "website", "stalls", "status", "createdBy", "eventId"],
+    fields: ["_id", "phoneNumber", "username", "name", "walletAddress", "about", "picture", "banner", "website", "stalls", "status", "createdBy", "eventId"],
 
   },
   mixins: [
@@ -235,7 +236,7 @@ module.exports = {
     inviteMerchant: {
       params: {
         name: { type: 'string', optional: true },
-        mobileNumber: { type: 'string', required: true },
+        phoneNumber: { type: 'string', required: true },
         username: { type: 'string', required: true },
         walletAddress: { type: 'string', required: true },
         about: { type: 'string', optional: true },
@@ -246,17 +247,25 @@ module.exports = {
       },
       async handler(ctx) {
         const {
-          mobileNumber,
+          phoneNumber,
         } = Object.assign({}, ctx.params)
 
-        let user = await this.adapter.findOne({ mobileNumber })
+        let user = await this.adapter.findOne({ phoneNumber })
 
         if (!user) {
+
+          const stall = await ctx.call('stalls.create', {...defaultStall})
+
           user = await this.actions.create({
             ...ctx.params,
             id: crypto.randomUUID(),
             createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+            stalls: [stall._id],
+
           })
+
+          await ctx.call('stalls.update', { id: stall._id, merchantId: user._id })
+
           const otp = await this.generateOTP(user._id)
           this.logger.info('user OTP::', otp) // TEMP
           return user
