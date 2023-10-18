@@ -38,6 +38,18 @@ module.exports = {
         urlencoded: { extended: true }
       },
 
+    },
+    {
+      path: '/ussd',
+      authentication: false,
+      whitelist: ['ussd.menu'],
+      aliases: {
+        'POST /': 'ussd.menu'
+      },
+      bodyParsers: {
+        json: true,
+        urlencoded: { extended: true }
+      }
     }]
   },
 
