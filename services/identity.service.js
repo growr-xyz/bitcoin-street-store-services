@@ -60,10 +60,12 @@ module.exports = {
   // /**
   //  * Methods
   //  */
+
+  // props: { createWalletAddress: boolean }
   methods: {
     async createIdentity(identityOptions) {
       const { params, props, ctx } = identityOptions
-
+      await this.createProfile()
 
     }
 
