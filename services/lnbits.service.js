@@ -75,7 +75,7 @@ module.exports = {
         } = Object.assign({}, ctx.params)
 
 
-        const resp = await ctx.call('lnbits.post', {
+        return await ctx.call('lnbits.post', {
           url: `${basePath}/usermanager/api/v1/users`,
           opt: {
             headers: {
@@ -90,7 +90,7 @@ module.exports = {
             responseType: 'json'
           }
         })
-        console.log(resp)
+        // console.log(resp)
 
       }
     },

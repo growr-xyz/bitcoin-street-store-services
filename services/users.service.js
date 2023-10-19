@@ -266,42 +266,6 @@ module.exports = {
       }
     },
 
-    createMerchantIdentity: {
-      params: {
-        merchantId: { type: 'string', required: true },
-      },
-      async handler(ctx) {
-        const merchant = await this.actions.get({ id: ctx.params.merchantId })
-        // kind - 0
-        const event = {
-          username: merchant.username,
-          about: merchant.about,
-          picture: merchant.picture,
-          nip05: `${merchant.username}@bss.biz`,
-          lud16: merchant.walletAddress,
-          banner: merchant.banner,
-          website: merchant.website || 'bss.biz'
-        }
-
-
-      }
-    },
-
-    updateWallet: {
-      params: {
-        user: 'object',
-        walletAddress: 'string'
-      },
-      async handler(ctx) {
-        const { user, walletAddress } = Object.assign({}, ctx.params)
-        const upd = await this.adapter.updateById(user._id, {
-          $set: { walletAddress: walletAddress }
-        })
-        return upd._doc
-      },
-    },
-
-    /*
     // TODO [BSS] Modify to new interface
     updateMerchant: {
       params: {
@@ -333,7 +297,6 @@ module.exports = {
         return user
       }
     },
-    */
 
     getMerchantOtp: {
       params: {
@@ -492,6 +455,20 @@ module.exports = {
   */
 
   events: {
+    'users.updateProfile': {
+      async handler({ userId, nprofile, eventId }) {
+        await ctx.call('users.update', {
+          id: userId,
+          update: {
+            $set: {
+              profile: nprofile,
+              eventId
+            }
+          }
+        })
+        return true
+      }
+    }
   },
 
   // /**

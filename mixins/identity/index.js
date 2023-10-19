@@ -66,30 +66,24 @@ module.exports = {
     createIdentity: {
       params: {
         props: {
-          type: 'object|optional',
+          type: 'object',
         }
       },
       async handler(ctx) {
         const { user } = Object.assign({}, ctx.meta)
-        const identity = await this.findOne({ userId: user._id })
+        const identity = await ctx.call('identity.find', { query: { userId: user._id } })[0]
         if (identity) {
           throw new MoleculerClientError('User already has an identity')
         }
         const newIdentity = {
           userId: user._id,
-          fullName: user.fullName || null,
           identifier: {
             provider: process.env.IDENTITY_PROVIDER,
-          },
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }
-        const identityToStore = this.createIdentity({ params: newIdentity, props: ctx.params.props, ctx })
-        if (props && Object.keys(props).length > 0) {
-          if (props.createWalletAddress) {
-            identityToStore.identifier.walletAddress = await this.createWalletAddress()
           }
         }
+        const identityToStore = await this.createIdentity({ params: newIdentity, props: ctx.params.props, ctx })
+        await this.actions.create(identityToStore)
+
       }
     },
 
