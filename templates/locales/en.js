@@ -24,6 +24,8 @@ module.exports = {
   'pinNotMatch': 'Pin does not match!',
   'wrongOtp': 'Wrong OTP.',
   'noUser': 'You are not invited.',
+  'invalidUser': 'You are not authenticated.',
+  'invalidProduct': 'You have selected invalid product.',
   'end': 'Good bye!',
 
   //onboarding messages
@@ -40,13 +42,12 @@ module.exports = {
   'members.createIdentity.identityCreated': `Your PIN was set and your merchant identity is created.\n
 1. Continue
 0. Exit`,
-  'members.createIdentity.profile': (name, username, about, wallet) => {
+  'members.createIdentity.profile': (username, wallet, status) => {
   return `Congratulations! You have successfully created your identity!
 Your profile info:
-Name: ${name}
 Username: ${username}
-About: ${about}
-Wallet: ${wallet}\n
+Wallet: ${wallet}
+Status: ${status}\n
 1. Continue
 0. Exit`
   },
@@ -80,9 +81,10 @@ ${changesText}
 
   'members.products': (products) => {
     let productsText = ''
-    for (const productNo in Object.keys(products)) {
-      const productName = Object.values(products)[productNo]
-      productsText += `${productNo}. ${productName}\n`
+    let i = 1
+    for (const product of products) {
+      productsText += `${i}. ${product.name}\n`
+      i += 1
     }
     return `Current stock:
 ${productsText}\n
@@ -98,9 +100,10 @@ Enter new quantity:`
  
   'members.orders':  (orders) => {
     let ordersText = ''
-    for (const orderNo in Object.keys(orders)) {
-      const orderInfo = Object.values(orders)[orderNo]
-      ordersText += `${orderNo}. ${orderInfo}\n`
+    let i = 1
+    for (const order of orders) {
+      ordersText += `${i}. ${order.name}\n`
+      i += 1
     }
     return `Pending orders:
 ${ordersText}\n
@@ -110,7 +113,7 @@ Enter order number to proceed:
   },
   'members.orders.order': (products, quantity, currency, price, paymentStatus, user, message) => {
     let productsText = ''
-    for (const productNo in Object.keys(products)) {
+    for (const productNo of Object.keys(products)) {
       const productName = Object.values(products)[productNo]
       productsText += `${productNo}. ${productName}\n`
     }
@@ -144,17 +147,16 @@ Current balance: ${balance}\n
   },
   'members.wallet.change': 'Enter new wallet address:',
   'members.wallet.changedAddress': (wallet) => {
-    return `You new withdraw wallet address is: ${wallet}\n
+    return `Your new withdraw wallet address is: ${wallet}\n
 1. Back to main Menu`
   },
 
-  'members.profile': (name, username, about, wallet) => {
+  'members.profile': (username, wallet, status) => {
   return `Congratulations! You have successfully created your identity!
 Your profile info:
-Name: ${name}
 Username: ${username}
-About: ${about}
-Wallet: ${wallet}\n
+Wallet: ${wallet}
+Status: ${status}\n
 1. Continue`
   },
 

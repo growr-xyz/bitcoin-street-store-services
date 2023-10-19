@@ -74,6 +74,12 @@ const MerchantSchema = new Schema({
       type: Boolean,
       default: false
     }
+  },
+  pin: {
+    type: String
+  },
+  session: {
+    type: String
   }
 }, { timestamps: true });
 

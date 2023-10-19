@@ -39,25 +39,51 @@ module.exports = {
     /**
      * Register Lender
      */
-    // find: {
-    //   async handler(ctx) {
-    //     const entities = await this.adapter.find(ctx.params);
-    //     return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
-    //   }
-    // },
+    find: {
+      async handler(ctx) {
+        const entities = await this.adapter.find(ctx.params)
+        //return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
+        return entities
+      }
+    },
 
     addProduct: {
       async handler(ctx) {
         const stall = await ctx.call('stalls.find', { merchantId: ctx.params.merchantId });
         const entity = await this.actions.create({
-          ...ctx.params, 
+          ...ctx.params,
           createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
           stallId: stall[0]._id,
         });
         // return await this.transformDocuments(ctx, {}, entity);
         return entity;
       }
-    }
+    },
+
+    list: {
+      params: {
+        merchantId: { type: 'string', required: true }
+      },
+      async handler(ctx) {
+        const entities = await this.adapter.find({ query: { merchantId: ctx.params.merchantId } })
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
+        // return entities
+      }
+    },
+
+    updateQuantity: {
+      params: {
+        product: 'object',
+        quantity: 'string'
+      },
+      async handler(ctx) {
+        const { product, quantity } = Object.assign({}, ctx.params)
+        const upd = await this.adapter.updateById(product._id, {
+          $set: { quantity: quantity }
+        })
+        return upd._doc
+      },
+    },
 
 
   },

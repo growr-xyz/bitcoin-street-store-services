@@ -85,7 +85,7 @@ module.exports = {
             menu.end(messages[locale]['noUser'])
             return
           }
-          await menu.session.set('user', { ...user, ...{ ussdSession: menu.args.sessionId } })
+          await menu.session.set('user', { ...user, ...{ session: menu.args.sessionId } })
           if (user.status == 'Invited') {
             return 'members.createIdentity'
           } else {
@@ -95,7 +95,7 @@ module.exports = {
       }
     })
 
-   // members menus
+    // members menus
 
     menu.state('members.enterPin', {
       run: async () => {
@@ -143,12 +143,11 @@ module.exports = {
         const user = await menu.session.get('user')
         const otp = menu.val
         try {
-          /*
           if (!(await ctx.call('users.validateOtp', { user, otp }))) {
             menu.end(messages[locale]['wrongOtp'])
             return
           }
-          */ // TODO: uncomment this
+          // TODO: uncomment this
           menu.con(messages[locale]['members.createIdentity.setPin'])
         } catch (e) {
           menu.end(e.message)
@@ -181,22 +180,21 @@ module.exports = {
           menu.end(messages[locale]['pinNotMatch']) // TODO - maybe we can return the user to confirm the PIN again
           return
         }
-        const user = await menu.session.get('user')
-        
-        /*
-        await ctx.call('users.setPin', { user, pin })
+        let user = await menu.session.get('user')
+
+        user = await ctx.call('users.setPin', { user, pin })
 
         // TODO [BSS] create lnbits wallet + identity ?
 
         // await ctx.call('users.createIdentity', {
-          
+
         // })
 
         // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
-        user.state = ENUMS.userStates.REGISTERED
+        user.status = ENUMS.userStates.REGISTERED
         await ctx.call('users.update', { id: user._id, ...user })
-        await ctx.call('identity.setSession') 
-        */ // TODO - uncomment this
+        // await ctx.call('identity.setSession') // TODO uncomment this
+
         await menu.session.set('user', user)
         await menu.session.set('pinChecked', true)
         menu.con(messages[locale]['members.createIdentity.identityCreated'])
@@ -213,8 +211,8 @@ module.exports = {
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
-        menu.con(messages[locale]['members.createIdentity.profile'](user.username, user.walletAddress))
+        }
+        menu.con(messages[locale]['members.createIdentity.profile'](user.username, user.walletAddress, user.status))
       },
       next: {
         // eslint-disable-next-line no-useless-escape
@@ -223,12 +221,12 @@ module.exports = {
     })
 
     menu.state('members.storeChanges', {
-      run: async() => {
+      run: async () => {
         const user = await menu.session.get('user')
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
+        }
         // get pending changes
         let changes = [];
         // TODO - get pending changes from products.service
@@ -241,7 +239,7 @@ module.exports = {
     })
 
     menu.state('members.storeChanges.confirmed', {
-      run: async() => {
+      run: async () => {
         // TODO - change status of pending products to confirmed
         menu.con(messages[locale]['members.storeChanges.confirmed'])
       },
@@ -251,15 +249,24 @@ module.exports = {
     })
 
     menu.state('members.products', {
-      run: async() => {
+      run: async () => {
+        const { ctx } = menu.args
         const user = await menu.session.get('user')
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
+        }
         // get merchant products
-        let products = [];
-        // TODO - get products from products.service
+        // TODO: fix the error below
+        const products = await ctx.call('products.list', { merchantId: user._id })
+        /*
+        const products = [
+          { _id: '123', name: 'product A', quantity: 5},
+          { _id: '555', name: 'product B', quantity: 8}
+        ]
+        */
+        // store products array to the session
+        await menu.session.set('products', products);
         menu.con(messages[locale]['members.products'](products))
       },
       next: {
@@ -269,16 +276,18 @@ module.exports = {
     })
 
     menu.state('members.products.quantity', {
-      run: async() => {
-        const productNo = menu.val
+      run: async () => {
+        // get selected product from the menu
+        const productNo = Number.parseInt(menu.val);
+        // store selected product in the session
         await menu.session.set('productNo', productNo);
-        // get product details
-        let product = {
-          productName: '',
-          quantity: 0
-        };
-        // TODO - get product details from products.service by productNo
-        menu.con(messages[locale]['members.products.quantity'](product.productName, product.quantity))
+        // get product details from the session
+        const product = (await menu.session.get('products'))[productNo - 1];
+        if (!product) {
+          menu.end(messages[locale]['invalidProduct']);
+          return
+        }
+        menu.con(messages[locale]['members.products.quantity'](product.name, product.quantity))
       },
       next: {
         '*\\d': 'members.products.quantityUpdated',
@@ -287,10 +296,14 @@ module.exports = {
     })
 
     menu.state('members.products.quantityUpdated', {
-      run: async() => {
+      run: async () => {
+        // get quantity from the menu
+        const quantity = Number.parseInt(menu.val)
+        // get selected product and product object from the session
         const productNo = await menu.session.get('productNo');
-        const quantity = menu.val
-        // TODO - update quantity by productNo
+        const product = (await menu.session.get('products'))[productNo - 1];
+        // update product quantity:
+        await ctx.call('products.updateQuantity', { product, quantity });
         menu.con(messages[locale]['members.products.quantityUpdated'])
       },
       next: {
@@ -299,12 +312,12 @@ module.exports = {
     })
 
     menu.state('members.orders', {
-      run: async() => {
+      run: async () => {
         const user = await menu.session.get('user')
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
+        }
         // get merchant orders
         let orders = [];
         // TODO - get orders from orders.service
@@ -314,29 +327,29 @@ module.exports = {
         '*\\d': 'members.orders.order',
         '0': 'end'
       }
-    }) 
-    
+    })
+
     menu.state('members.orders.order', {
-      run: async() => {
+      run: async () => {
         const orderNo = menu.val
         await menu.session.set('orderNo', orderNo);
         // get order details
         let order = {
-          products: [], 
-          quantity: 0, 
-          currency: 'sats', 
-          price: 0, 
-          paymentStatus: 'Paid', 
-          user: '', 
+          products: [],
+          quantity: 0,
+          currency: 'sats',
+          price: 0,
+          paymentStatus: 'Paid',
+          user: '',
           message: ''
         };
         // TODO - get order details from orders.service by orderNo
         menu.con(messages[locale]['members.orders.order'](
-          order.products, 
-          order.currency, 
-          order.price, 
-          order.paymentStatus, 
-          order.user, 
+          order.products,
+          order.currency,
+          order.price,
+          order.paymentStatus,
+          order.user,
           order.message
         ))
       },
@@ -348,7 +361,7 @@ module.exports = {
     })
 
     menu.state('members.orders.orderMessage', {
-      run: async() => {
+      run: async () => {
         const orderNo = await menu.session.get('orderNo');
         let orderUser = '';
         // TODO: get user from order no
@@ -360,7 +373,7 @@ module.exports = {
     })
 
     menu.state('members.orders.orderMessageSent', {
-      run: async() => {
+      run: async () => {
         const orderNo = await menu.session.get('orderNo');
         let orderUser = '';
         // TODO: get user from order no
@@ -374,7 +387,7 @@ module.exports = {
     })
 
     menu.state('members.orders.shipping', {
-      run: async() => {
+      run: async () => {
         const orderNo = await menu.session.get('orderNo');
         let orderUser = '';
         // TODO: change order status of orderNo to shipped
@@ -391,7 +404,7 @@ module.exports = {
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
+        }
         let wallet = ''
         let balance = 0
         //TODO - get balance of wallet
@@ -404,7 +417,7 @@ module.exports = {
     })
 
     menu.state('members.wallet.change', {
-      run: async() => {
+      run: async () => {
         menu.con(messages[locale]['members.wallet.change'])
       },
       next: {
@@ -413,7 +426,7 @@ module.exports = {
       }
     })
 
-     menu.state('members.wallet.changedAddress', {
+    menu.state('members.wallet.changedAddress', {
       run: async () => {
         const user = await menu.session.get('user')
         const walletAddress = menu.val
@@ -432,8 +445,8 @@ module.exports = {
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
-        } 
-        menu.con(messages[locale]['members.profile'](user.username, user.walletAddress))
+        }
+        menu.con(messages[locale]['members.profile'](user.username, user.walletAddress, user.status))
       },
       next: {
         // eslint-disable-next-line no-useless-escape

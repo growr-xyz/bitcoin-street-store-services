@@ -120,9 +120,7 @@ module.exports = {
     find: {
       async handler(ctx) {
         const entities = await this.adapter.find(ctx.params);
-        return entities;
-        //TODO: uncomment this:
-        //return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
       }
     },
 
@@ -169,7 +167,7 @@ module.exports = {
         const upd = await this.adapter.updateById(user._id, {
           $set: { pin: pinString }
         })
-        return upd
+        return upd._doc
       },
     },
 
@@ -179,8 +177,9 @@ module.exports = {
         pin: { type: 'string', required: true }
       },
       async handler(ctx) {
-        const { user, pin } = Object.assign({}, ctx.params)
-        if (await bcrypt.compare(pin, user.pin)) {
+        const { pin } = Object.assign({}, ctx.params)
+        const fullUser = await this.adapter.findById(ctx.params.user._id)
+        if (await bcrypt.compare(pin, fullUser.pin)) {
           return true
         }
         return false
@@ -372,15 +371,9 @@ module.exports = {
       },
       async handler(ctx) {
         const { user, otp } = Object.assign({}, ctx.params)
-        if ((await this.validateOtp(user, otp))) {
-          user.otp.validated = true
-          // try {
-          await ctx.call('users.update', { id: user._id, ...user })
-          // } catch (e) {
-          //   console.log('Error539:', e.message);
-          //   console.log('Error540:', e.stack);
-          // }
-
+        const fullUser = await this.adapter.findOne({ id: user._id })
+        if ((await this.validateOtp(fullUser, otp))) {
+          await ctx.call('users.update', { id: user._id, otp: { validated: true  } })
         }
         return user
       }
