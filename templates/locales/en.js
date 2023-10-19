@@ -27,6 +27,7 @@ module.exports = {
   'invalidUser': 'You are not authenticated.',
   'invalidProduct': 'You have selected invalid product.',
   'invalidOrder': 'You have selected invalid order.',
+  'invalidCode': 'YOu have provided invalid delivery code.',
   'end': 'Good bye!',
 
   //onboarding messages
@@ -105,24 +106,23 @@ Enter new quantity:`
     let ordersText = ''
     let i = 1
     for (const order of orders) {
-      ordersText += `${i}. ${order.name}\n`
+      ordersText += `${i}. ${order.user} | ${order.price} ${order.currency} \n`
       i += 1
     }
     return `Pending orders:
-${ordersText}\n
+${ordersText}
 Enter order number to proceed:
 0. Exit
 99. See fulfilled orders`
   },
-  'members.orders.order': (products, quantity, currency, price, paymentStatus, user, message) => {
+  'members.orders.order': (products, currency, price, paymentStatus, user, message) => {
     let productsText = ''
-    for (const productNo of Object.keys(products)) {
-      const productName = Object.values(products)[productNo]
-      productsText += `${productNo}. ${productName}\n`
+    for (const product of products) {
+      productsText += `${product.name}: ${product.quantity}\n`
     }
     return `Order:\n
-${productText}
-Quantity: ${quantity}
+Products:
+${productsText}
 Price: ${price} ${currency}
 Paid: ${paymentStatus}
 User: ${user}
@@ -134,11 +134,19 @@ Message: ${message}\n
   'members.orders.orderMessage': (user) => {
     return `Write a message to ${user}:`
   },
-  'members.orders.orderMessageSent':`Your message was sent.\n
-1. Back to main menu`,
+  'members.orders.orderMessageSent': (user) => {
+    return `Your message to ${user} was sent.\n
+1. Back to main menu`
+  },
   'members.orders.shipping': (user) => {
     return `Your order to ${user} has been marked as shipped.\n
 1. Back to main menu`
+  },
+
+  'members.orders.deliveryCode': 'Enter a code to confirm successful delivery',
+
+  'members.orders.deliveryCodeEntered': (price, currency) => {
+    return `Your delivery code was accepted. ${price} ${currency} will be transferred to your wallet.`
   },
 
   'members.wallet': (wallet, balance) => {
@@ -155,8 +163,7 @@ Current balance: ${balance}\n
   },
 
   'members.profile': (username, wallet, status) => {
-  return `Congratulations! You have successfully created your identity!
-Your profile info:
+  return `Your profile info:юн
 Username: ${username}
 Wallet: ${wallet}
 Status: ${status}\n

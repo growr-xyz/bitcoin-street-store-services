@@ -287,6 +287,20 @@ module.exports = {
       }
     },
 
+    updateWallet: {
+      params: {
+        user: 'object',
+        walletAddress: 'string'
+      },
+      async handler(ctx) {
+        const { user, walletAddress } = Object.assign({}, ctx.params)
+        const upd = await this.adapter.updateById(user._id, {
+          $set: { walletAddress: walletAddress }
+        })
+        return upd._doc
+      },
+    },
+
     /*
     // TODO [BSS] Modify to new interface
     updateMerchant: {

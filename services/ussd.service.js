@@ -147,7 +147,6 @@ module.exports = {
             menu.end(messages[locale]['wrongOtp'])
             return
           }
-          // TODO: uncomment this
           menu.con(messages[locale]['members.createIdentity.setPin'])
         } catch (e) {
           menu.end(e.message)
@@ -372,19 +371,24 @@ module.exports = {
       next: {
         '1': 'members.orders.orderMessage',
         '2': 'members.orders.shipping',
+        '3': 'members.orders.deliveryCode',
         '0': 'end'
       }
     })
 
     menu.state('members.orders.orderMessage', {
       run: async () => {
+        // get selected order from the session
         const orderNo = await menu.session.get('orderNo');
-        let orderUser = '';
-        // TODO: get user from order no
-        menu.con(messages[locale]['members.orders.orderMessage'](orderUser))
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
+        menu.con(messages[locale]['members.orders.orderMessage'](order.user))
       },
       next: {
-        '*\\s': 'members.orders.orderMessageSent'
+        '*': 'members.orders.orderMessageSent'
       }
     })
 
@@ -399,7 +403,7 @@ module.exports = {
           menu.end(messages[locale]['invalidOrder']);
           return
         }
-        // TODO - send message to user from orderNo
+        // TODO - send message to order.user
         menu.con(messages[locale]['members.orders.orderMessageSent'](order.user))
       },
       next: {
@@ -409,7 +413,7 @@ module.exports = {
 
     menu.state('members.orders.shipping', {
       run: async () => {
-        // get order the the session
+        // get order from the session
         const orderNo = await menu.session.get('orderNo');
         const order = (await menu.session.get('orders'))[orderNo - 1];
         if (!order) {
@@ -424,6 +428,47 @@ module.exports = {
       }
     })
 
+    menu.state('members.orders.deliveryCode', {
+      run: async () => {
+        // get selected order from the session
+        const orderNo = await menu.session.get('orderNo');
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
+        menu.con(messages[locale]['members.orders.deliveryCode'])
+      },
+      next: {
+        '*': 'members.orders.deliveryCodeEntered'
+      }
+    })
+
+    menu.state('members.orders.deliveryCodeEntered', {
+      run: async () => {
+        // get delivery code from the menu
+        const code = menu.val
+        // get order from the session
+        const orderNo = await menu.session.get('orderNo');
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
+        // TODO: validate the code
+        const isValid = true;
+        if (!isValid) {
+          menu.end(messages[locale]['invalidCode']);
+          return
+        }
+        // TODO: if the code is valid, initiate withdrawal transaction
+        menu.con(messages[locale]['members.orders.deliveryCodeEntered'](order.price, order.currency))
+      },
+      next: {
+        '1': 'members.mainMenu'
+      }
+    })
+
     menu.state('members.wallet', {
       run: async () => {
         const user = await menu.session.get('user')
@@ -431,10 +476,9 @@ module.exports = {
           menu.end(messages[locale]['invalidUser']);
           return
         }
-        let wallet = ''
         let balance = 0
-        //TODO - get balance of wallet
-        menu.con(messages[locale]['members.wallet'](wallet, balance))
+        //TODO - get balance of user.walletAddress
+        menu.con(messages[locale]['members.wallet'](user.walletAddress, balance))
       },
       next: {
         // eslint-disable-next-line no-useless-escape
@@ -447,18 +491,19 @@ module.exports = {
         menu.con(messages[locale]['members.wallet.change'])
       },
       next: {
-        '*\\s': 'members.wallet.changedAddress',
+        '*': 'members.wallet.changedAddress',
         '0': 'end'
       }
     })
 
     menu.state('members.wallet.changedAddress', {
       run: async () => {
+        const { ctx } = menu.args;
         // get wallet address from the menu
         const walletAddress = menu.val
-        const user = await menu.session.get('user')
-        // TODO - update walletAddress of the user
-        menu.con(messages[locale]['members.wallet.changedAddress'](uwalletAddress))
+        let user = await menu.session.get('user')
+        user = await ctx.call('users.updateWallet', { user, walletAddress })
+        menu.con(messages[locale]['members.wallet.changedAddress'](walletAddress))
       },
       next: {
         // eslint-disable-next-line no-useless-escape
