@@ -67,13 +67,15 @@ Status: ${status}\n
     0. Exit`
   },
 
-  'members.storeChanges': (changes) => {
-    let changesText = ''
-    for (const change in changes) {
-      changesText += `- ${change}. \n`
+  'members.storeChanges': (draftProducts) => {
+    let productsText = ''
+    let i = 1
+    for (const product of draftProducts) {
+      productsText += `${i}. ${product.name}\n`
+      i += 1
     }
-    return `Confirm store changes:
-${changesText}
+    return `Confirm store changes ( ${i-1} new products):
+${productsText}
 1. Confirm
 0. Exit`
   },
@@ -87,8 +89,8 @@ ${changesText}
       productsText += `${i}. ${product.name}\n`
       i += 1
     }
-    return `Current stock:
-${productsText}\n
+    return `Current stock (${i-1} active products):
+${productsText}
 Enter product number to change quantity:`
   },
   'members.products.quantity': (productName, quantity) => {

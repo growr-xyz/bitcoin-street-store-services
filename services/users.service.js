@@ -287,6 +287,7 @@ module.exports = {
       }
     },
 
+    /*
     // TODO [BSS] Modify to new interface
     updateMerchant: {
       params: {
@@ -318,6 +319,7 @@ module.exports = {
         return user
       }
     },
+    */
 
     getMerchantOtp: {
       params: {
@@ -379,7 +381,7 @@ module.exports = {
       }
     },
 
-
+    /*
     // TODO [BSS] Do we need it? Modify to new interface
     addUser: {
       params: {
@@ -424,6 +426,7 @@ module.exports = {
         return user;
       }
     },
+  */
 
 
   },
@@ -450,6 +453,7 @@ module.exports = {
       //   return user
       // },
 
+      /*
       async update(ctx, user) {
         if (ctx.caller === 'ussd' &&
           ctx.meta.user.state !== user.state
@@ -457,6 +461,7 @@ module.exports = {
           await ctx.emit('ussd.update.state.cb', { user })
         }
       },
+      */
       // after: {
       //   async inviteUserToProject(ctx, _id) {
       //     const otp = await this.generateOTP(_id)

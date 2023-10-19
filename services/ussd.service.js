@@ -222,15 +222,15 @@ module.exports = {
 
     menu.state('members.storeChanges', {
       run: async () => {
+        const { ctx } = menu.args;
         const user = await menu.session.get('user')
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
         }
-        // get pending changes
-        let changes = [];
-        // TODO - get pending changes from products.service
-        menu.con(messages[locale]['members.storeChanges'](changes))
+        // get pending products
+        const draftProducts = await ctx.call('products.listByStatus', { merchantId: user._id, status: 'Review' })
+        menu.con(messages[locale]['members.storeChanges'](draftProducts))
       },
       next: {
         '1': 'members.storeChanges.confirmed',
@@ -240,7 +240,14 @@ module.exports = {
 
     menu.state('members.storeChanges.confirmed', {
       run: async () => {
-        // TODO - change status of pending products to confirmed
+        const { ctx } = menu.args;
+        const user = await menu.session.get('user')
+        if (!user) {
+          menu.end(messages[locale]['invalidUser']);
+          return
+        }
+        // activate products for review:
+        await ctx.call('products.sendProductsForPublishing', { merchantId: user._id} );
         menu.con(messages[locale]['members.storeChanges.confirmed'])
       },
       next: {
@@ -257,7 +264,7 @@ module.exports = {
           return
         }
         // get merchant products
-        const products = await ctx.call('products.list', { merchantId: user._id })
+        const products = await ctx.call('products.listByStatus', { merchantId: user._id, status: 'Active' })
         // store products array to the session
         await menu.session.set('products', products);
         menu.con(messages[locale]['members.products'](products))
@@ -290,6 +297,7 @@ module.exports = {
 
     menu.state('members.products.quantityUpdated', {
       run: async () => {
+        const { ctx } = menu.args;
         // get quantity from the menu
         const quantity = Number.parseInt(menu.val)
         // get selected product and product object from the session
@@ -300,7 +308,11 @@ module.exports = {
           return
         }
         // update product quantity:
-        await ctx.call('products.updateQuantity', { product, quantity });
+        try {
+          await ctx.call('products.updateQuantity', { product, quantity });
+        } catch (err) {
+          console.log(err);
+        }
         menu.con(messages[locale]['members.products.quantityUpdated'])
       },
       next: {

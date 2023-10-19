@@ -71,6 +71,22 @@ module.exports = {
       }
     },
 
+    listByStatus: {
+      params: {
+        merchantId: { type: 'string', required: true },
+        status: { type: 'string', required: true}
+      },
+      async handler(ctx) {
+        const entities = await this.adapter.find(
+          { query: { 
+            merchantId: ctx.params.merchantId,
+            status: ctx.params.status
+          }
+        });
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
+      }
+    },
+
     updateQuantity: {
       params: {
         product: 'object',
@@ -84,6 +100,40 @@ module.exports = {
         return upd._doc
       },
     },
+
+    sendProductsForApproval: {
+      params: {
+        merchantId: { type: 'string', required: true }
+      },
+      async handler(ctx) {
+        const merchantId = ctx.params.merchantId;
+        const result = await this.adapter.updateMany(
+          { merchantId: { $eq: merchantId}, status: { $eq: 'Draft' } }, 
+          { $set: { status: 'Review'} },
+          { multi: true }
+        );
+        // return result.modifiedCount; // TODO (low priority), result is null
+        return result
+      }
+    },
+
+    sendProductsForPublishing: {
+      params: {
+        merchantId: { type: 'string', required: true }
+      },
+      async handler(ctx) {
+        const merchantId = ctx.params.merchantId;
+        const result = await this.adapter.updateMany(
+          { merchantId: { $eq: merchantId}, status: { $eq: 'Review' } }, 
+          { $set: { status: 'Active'} },
+          { multi: true }
+        );
+        // TODO - add here publishing to Nostr (all affected records); if this is first publishing, publish also the stall
+
+        // return result.modifiedCount; // TODO (low priority), result is undefined
+        return result
+      }
+    }
 
 
   },
