@@ -191,7 +191,7 @@ module.exports = {
         // })
 
         // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
-        user.status = ENUMS.userStates.REGISTERED
+        user.status = 'Confirmed';
         await ctx.call('users.update', { id: user._id, ...user })
         // await ctx.call('identity.setSession') // TODO uncomment this
 
@@ -257,14 +257,7 @@ module.exports = {
           return
         }
         // get merchant products
-        // TODO: fix the error below
         const products = await ctx.call('products.list', { merchantId: user._id })
-        /*
-        const products = [
-          { _id: '123', name: 'product A', quantity: 5},
-          { _id: '555', name: 'product B', quantity: 8}
-        ]
-        */
         // store products array to the session
         await menu.session.set('products', products);
         menu.con(messages[locale]['members.products'](products))
@@ -302,6 +295,10 @@ module.exports = {
         // get selected product and product object from the session
         const productNo = await menu.session.get('productNo');
         const product = (await menu.session.get('products'))[productNo - 1];
+        if (!product) {
+          menu.end(messages[locale]['invalidProduct']);
+          return
+        }
         // update product quantity:
         await ctx.call('products.updateQuantity', { product, quantity });
         menu.con(messages[locale]['members.products.quantityUpdated'])
@@ -319,8 +316,18 @@ module.exports = {
           return
         }
         // get merchant orders
-        let orders = [];
         // TODO - get orders from orders.service
+        const orders = [
+          {
+            products: [ {_id: 'some-id', name: 'some-name', quantity: 10}],
+            currency: 'sats',
+            price: 550,
+            paymentStatus: 'Paid',
+            user: 'UserX',
+            message: 'I need them urgently'
+          }
+        ];
+        await menu.session.set('orders', orders);
         menu.con(messages[locale]['members.orders'](orders))
       },
       next: {
@@ -331,19 +338,16 @@ module.exports = {
 
     menu.state('members.orders.order', {
       run: async () => {
-        const orderNo = menu.val
+        // get selected order from the menu:
+        const orderNo = Number.parseInt(menu.val)
+        // store the order in the session
         await menu.session.set('orderNo', orderNo);
-        // get order details
-        let order = {
-          products: [],
-          quantity: 0,
-          currency: 'sats',
-          price: 0,
-          paymentStatus: 'Paid',
-          user: '',
-          message: ''
-        };
-        // TODO - get order details from orders.service by orderNo
+        // get order details from the session
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
         menu.con(messages[locale]['members.orders.order'](
           order.products,
           order.currency,
@@ -374,12 +378,17 @@ module.exports = {
 
     menu.state('members.orders.orderMessageSent', {
       run: async () => {
-        const orderNo = await menu.session.get('orderNo');
-        let orderUser = '';
-        // TODO: get user from order no
+        // get message from the menu
         const message = menu.val
+        // get order from the session
+        const orderNo = await menu.session.get('orderNo');
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
         // TODO - send message to user from orderNo
-        menu.con(messages[locale]['members.orders.orderMessageSent'](orderUser))
+        menu.con(messages[locale]['members.orders.orderMessageSent'](order.user))
       },
       next: {
         '1': 'members.mainMenu'
@@ -388,10 +397,15 @@ module.exports = {
 
     menu.state('members.orders.shipping', {
       run: async () => {
+        // get order the the session
         const orderNo = await menu.session.get('orderNo');
-        let orderUser = '';
-        // TODO: change order status of orderNo to shipped
-        menu.con(messages[locale]['members.orders.shipping'](orderUser))
+        const order = (await menu.session.get('orders'))[orderNo - 1];
+        if (!order) {
+          menu.end(messages[locale]['invalidOrder']);
+          return
+        }
+        // TODO: change order status of order._id to shipped
+        menu.con(messages[locale]['members.orders.shipping'](order.user))
       },
       next: {
         '1': 'members.mainMenu'
@@ -428,8 +442,9 @@ module.exports = {
 
     menu.state('members.wallet.changedAddress', {
       run: async () => {
-        const user = await menu.session.get('user')
+        // get wallet address from the menu
         const walletAddress = menu.val
+        const user = await menu.session.get('user')
         // TODO - update walletAddress of the user
         menu.con(messages[locale]['members.wallet.changedAddress'](uwalletAddress))
       },

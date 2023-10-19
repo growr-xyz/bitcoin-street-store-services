@@ -26,6 +26,7 @@ module.exports = {
   'noUser': 'You are not invited.',
   'invalidUser': 'You are not authenticated.',
   'invalidProduct': 'You have selected invalid product.',
+  'invalidOrder': 'You have selected invalid order.',
   'end': 'Good bye!',
 
   //onboarding messages

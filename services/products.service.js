@@ -74,7 +74,7 @@ module.exports = {
     updateQuantity: {
       params: {
         product: 'object',
-        quantity: 'string'
+        quantity: 'number'
       },
       async handler(ctx) {
         const { product, quantity } = Object.assign({}, ctx.params)
