@@ -23,13 +23,13 @@ module.exports = {
   methods: {
     async checkPin(user, ctx, menu) {
       if (await menu.session.get('pinChecked')) {
-        //!!(await ctx.call('identity.setSession') // TODO: uncomment this
-        return true
+        !!(await ctx.call('identity.setSession')) // TODO: uncomment this
+        // return true
       }
       const pin = (menu.val.length === 4) ? menu.val : menu.args.text.split('*')[0]
       if (await ctx.call('users.checkPin', { user, pin })) {
         await menu.session.set('pinChecked', true)
-        // await ctx.call('identity.setSession') //TODO: uncomment this
+        await ctx.call('identity.setSession') //TODO: uncomment this
         // TODO: set user in meta and remove from "menu" action
         return true
       } else {
@@ -184,7 +184,7 @@ module.exports = {
         user = await ctx.call('users.setPin', { user, pin })
 
         // TODO [BSS] create lnbits wallet + identity ?
-        ctx.meta.user = user
+        ctx.meta.user = {...ctx.meta.user, ...user}
         await ctx.call('identity.createIdentity', {
           props: {
             username: user.username,

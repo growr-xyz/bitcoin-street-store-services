@@ -457,15 +457,10 @@ module.exports = {
   events: {
     'users.updateProfile': {
       async handler({ userId, nprofile, eventId }) {
-        await ctx.call('users.update', {
-          id: userId,
-          update: {
-            $set: {
-              profile: nprofile,
-              eventId
-            }
-          }
-        })
+        const user = await this.broker.call('users.get', { id: userId._id.toString() })
+        user.profile = nprofile
+        user.eventId = eventId
+        const updated = await this.broker.call('users.update', { id: user._id.toString(), ...user})
         return true
       }
     }

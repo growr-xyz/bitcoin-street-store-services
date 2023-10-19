@@ -9,10 +9,9 @@ const IdentifierSchema = new Schema({
     key: { type: String },
     value: { type: String },
   }],
-  wallets: [{
-    provider: { type: String },
-    wallet: mongoose.Schema.Types.Mixed,  
-  }]
+  wallets: [
+     mongoose.Schema.Types.Mixed,  
+  ]
 }, { timestamps: true });
 
 // Define the Identity schema

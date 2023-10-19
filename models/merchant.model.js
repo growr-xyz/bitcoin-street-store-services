@@ -80,7 +80,7 @@ const MerchantSchema = new Schema({
   },
   session: {
     type: String
-  }
+  },
 }, { timestamps: true });
 
 

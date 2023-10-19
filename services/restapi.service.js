@@ -167,43 +167,6 @@ module.exports = {
   },
 
   actions: {
-    addMerchant: {
-      auth: true,
-      params: {
-        fullName: "string|required",
-        phoneNumber: "string|required",
-        username: "string|required",
-        settlementAddress: "string|required",
-        profilePic: "url|optional",
-        website: "url|optional",
-        nip05: "email|optional",
-        banner: "url|optional",
-        about: "string|optional",
-      },
-      async handler(ctx) {
-        // const {
-        //   fullName,
-        //   phoneNumber,
-        //   username,
-        //   settlementAddress,
-        //   profilePic,
-        //   website,
-        //   nip05,
-        //   banner,
-        //   about
-        // } = Object.assign({}, ctx.params)
 
-        const user = await ctx.call("users.addMerchant", ctx.params);
-        if (user) {
-          return {
-            success: true,
-          };
-        } else {
-          return {
-            success: false,
-          };
-        }
-      },
-    },
   },
 };

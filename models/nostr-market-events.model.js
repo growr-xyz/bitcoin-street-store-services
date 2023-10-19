@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const EventSchema = new mongoose.Schema({
-  uuid: {
+  eventId: {
     type: String,
     required: true
   },
   kind: {
     type: Number,
     required: true,
-    enum: [30017, 30018, 30019]
+    // enum: [30017, 30018, 30019]
   },
   rawJson: {
     type: mongoose.Schema.Types.Mixed,
