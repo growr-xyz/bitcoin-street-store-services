@@ -18,6 +18,7 @@ const mongoose = require('mongoose')
 const { MerchantModel } = require('../models')
 const crypto = require('crypto');
 const { defaultStall } = require('../models/stall.model')
+// const { BaseStrategy } = require('moleculer')
 
 let messages
 const locale = process.env.LOCALE || 'en'
@@ -124,15 +125,6 @@ module.exports = {
         //return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
       }
     },
-
-
-    update: {
-      async handler(ctx) {
-        console.log(ctx.params)
-        return
-      }
-    },
-  
 
     // TODO [BSS] Change to agent
     /*registerLenderConsultant: {
@@ -272,6 +264,27 @@ module.exports = {
         } else {
           throw new MoleculerClientError('User with this phone number exists')
         }
+      }
+    },
+
+    createMerchantIdentity: {
+      params: {
+        merchantId: { type:'string', required: true },
+      },
+      async handler(ctx) {
+        const merchant = await this.actions.get({ id: ctx.params.merchantId })
+        // kind - 0
+        const event = {
+          username: merchant.username,
+          about: merchant.about,
+          picture: merchant.picture,
+          nip05: `${merchant.username}@bss.biz`,
+          lud16: merchant.walletAddress,
+          banner: merchant.banner,
+          website: merchant.website || 'bss.biz'
+        }
+
+
       }
     },
 
