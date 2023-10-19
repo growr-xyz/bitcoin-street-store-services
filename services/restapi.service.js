@@ -32,10 +32,13 @@ module.exports = {
         aliases: {
           // 'REST /merchants': 'users',
           "GET /merchants": "users.list",
+          "GET /merchants/:id": "users.get",
           "POST /merchants": "users.inviteMerchant",
           "PUT /merchants/:id": "users.update",
           "GET /merchants/:merchantId/products": "products.list",
+          "POST /merchants/:merchantId/products/push": "products.sendProductsForApproval",
           "POST /merchants/:merchantId/products": "products.addProduct",
+          "GET /merchants/:merchantId/products/:id": "products.get",
           "PUT /merchants/:merchantId/products/:id": "products.update",
           // "GET /merchants/:merchantId/stalls": "stalls.list",
           // "POST /merchants/:merchantId/stalls": "stalls.addStall",
