@@ -13,6 +13,8 @@ const ENUMS = require('../config/enums');
 const NOSTRService = require('../nostr/moleculer-nostr-service')
 const identityMixin = require('../mixins/identity');
 const nostrService = require('./nostr.-service');
+const { IdentityModel } = require('../models');
+const getName = require('goofy-names');
 
 module.exports = {
   name: 'identity',
@@ -23,11 +25,12 @@ module.exports = {
 
 
   mixins: [
-    DbService('identity'),
+    DbService('identity', IdentityModel),
     NOSTRService,
     identityMixin,
 
   ],
+  model: IdentityModel,
   settings: {
   },
 
@@ -49,180 +52,6 @@ module.exports = {
   },
 
 
-  /*
-      createWallet: {
-        // params: {
-        //   userId: { type: 'string', required: true },
-        // },
-        async handler(ctx) {
-          //const { userId } = Object.assign({}, ctx.params)
-          if (!ctx.meta.user || !ctx.meta.user._id) {
-            throw new MoleculerClientError('Invalid user')
-          }
-          const userId = ctx.meta.user._id;
-          const identity = await this.adapter.findOne({ userId })
-          if (identity) {
-            return identity.identity.did
-          }
-          // TODO add config to mainnet
-          const wallet = await GrowrAgent.createWallet(
-            ENUMS.networkConfigs[process.env.BLOCKCHAIN].network[process.env.BC_NETWORK]
-          )
-          // TODO private key should be distributed as Shamir Secret Sharing Algorithm on later stage
-          // TODO [now] check mnenonic empty
-          const { privateKey, mnemonic, address } = wallet
-          // TODO add config for mainnet or testnet
-          const did = (await GrowrAgent.getDid({
-            didConfig: {
-              privateKey: privateKey.substring(2),
-              networkName: ENUMS.networkConfigs[process.env.BLOCKCHAIN].provider[process.env.BC_NETWORK].name,
-            }
-          })).did.toLowerCase().trim()
-          const entity = { userId }
-          entity.identity = { privateKey, mnemonic, address, did }
-          entity.vcs = []
-          await ctx.call('identity.create', entity)
-          return did
-        }
-      },
-  
-      findUserByDid: {
-        params: {
-          did: { type: 'string', required: true },
-        },
-        async handler(ctx) {
-          const { did } = ctx.params
-          let user = await this.adapter.findOne({
-            'identity.did': did
-          })
-          if (!user || !user.userId) {
-            throw new MoleculerClientError('This DID is not into custody')
-          }
-          user = await ctx.call('users.get', { id: user.userId })
-          return user
-        }
-      },
-  
-  
-      // **
-      // * Standartize mixin and add verifications per implementation
-      // **    
-      setSession: {
-        async handler(ctx) {
-          const { user } = Object.assign({}, ctx.meta)
-          const identity = await this.adapter.findOne({ userId: user._id })
-          if (!identity) {
-            throw new MoleculerClientError('User does not exist')
-          }
-          identity.ussdSession = user.ussdSession
-          await ctx.call('identity.update', { id: identity._id, ...identity })
-          // await this.actions.update(identity)
-          return true
-        }
-      },
-  
-      getVC: {
-        params: {
-          //userId: { type: 'string', required: true },
-          type: { type: 'string', required: true }
-          //session: { type: 'string', required: true }
-        },
-        async handler(ctx) {
-          const {
-            //userId,
-            userData,
-            type
-            //session
-          } = Object.assign({}, ctx.params)
-          const userId = ctx.meta.user._id;
-          const session = ctx.meta.user.ussdSession;
-          const identity = await this.adapter.findOne({ userId })
-          if (!identity) {
-            throw new MoleculerClientError('User does not exist')
-          }
-          // **
-          // * Standartize mixin and add verifications per implementation
-          // **
-          if (identity.ussdSession !== session) {
-            throw new MoleculerClientError('Session does not match')
-          }
-          // **
-  
-          const vc = await ctx.call('issuer.issueVC', {
-            userData,
-            did: identity.identity.did,
-            type
-          })
-          const t = utils.capitalizeFirstLetter(type)
-          const vcMap = new Map()
-          identity.vcs.map(vc => vcMap.set(vc.type, vc))
-          vcMap.set(t, { type: t, vc })
-          const vcs = Array.from(vcMap.values(), (value => value))
-          identity.vcs = vcs
-          await ctx.call('identity.update', { id: identity._id, ...identity })
-          // return this.actions.update(identity)
-        }
-      },
-  
-      getCredentialTypes: {
-        params: {
-          // userId: { type: 'string', required: true },
-          // session: { type: 'string', required: true }
-        },
-        async handler(ctx) {
-          // const {
-          //   userId,
-          //   session
-          // } = Object.assign({}, ctx.params)
-          const userId = ctx.meta.user._id;
-          const session = ctx.meta.user.ussdSession;
-          const identity = await this.adapter.findOne({ userId })
-          if (!identity) {
-            throw new MoleculerClientError('User does not exist')
-          }
-          if (identity.ussdSession !== session) {
-            throw new MoleculerClientError('Session does not match')
-          }
-          // **
-          // * Standartize mixin and add verifications per implementation (USSD Session, etc)
-          // ** 
-          return identity.vcs.map(vc => vc.type)
-        }
-      },
-  
-      createPresentation: {
-        params: {
-          // userId: { type: 'string', required: true },
-          // session: { type: 'string', required: true },
-          vcTypes: {
-            type: 'array',
-            elements: { type: 'string' }
-          }
-        },
-        async handler(ctx) {
-          const {
-            // userId,
-            // session,
-            vcTypes
-          } = Object.assign({}, ctx.params)
-          const userId = ctx.meta.user._id;
-          const session = ctx.meta.user.ussdSession;
-          const identity = await this.adapter.findOne({ userId })
-          if (!identity) {
-            throw new MoleculerClientError('User does not exist')
-          }
-          if (identity.ussdSession !== session) {
-            throw new MoleculerClientError('Session does not match')
-          }
-          const agent = await this.getAgent(identity)
-          const vp = await this.createPresentation(identity, agent, vcTypes)
-          return vp
-  
-        }
-      },
-  
-    */
-
   /**
    * Events
    */
@@ -237,31 +66,72 @@ module.exports = {
   //  * Methods
   //  */
   methods: {
-    // decodeMessage(otp, message) { // TODO move to middleware ?
-    //   return bytes = CryptoJS.AES.decrypt(message, otp).toString(CryptoJS.enc.Utf8);
-    // },
-
-
     async createIdentity(identityOptions) {
-      const { params, props, ctx } = identityOptions
-      const { userId, identifier } = params
+      const { params, props } = identityOptions
+      const { userId } = params
       const {
-        profileEvent,
         nprofile,
         npub,
         nsec,
-        lnBitsUserId,
-        lnBitsAdminKey,
-        lnBitsWallet
+        profileEvent
       } = await this.createProfile(props)
+
+      const nostrPproperties = [{
+        key: 'npub',
+        value: npub,
+      }, {
+        key: 'nprofile',
+        value: nprofile,
+      }]
+
+      const nostrIdentifier = {
+        provider: process.env.IDENTITY_PROVIDER,
+        privateKey: nsec,
+        properties: nostrPproperties
+      }
+
+      const { username, nip05 } = props
+      const lnBitsUser = await this.broker.call('lnbits.createUser', {
+        username,
+        walletName: `${username}-merchant-wallet`,
+        email: nip05,
+        password: nsec
+      })
+
+      const walletProperties = [{
+        key: 'name',
+        value: lnBitsUser.name
+      }, {
+        key: 'email',
+        value: lnBitsUser.email
+      }, {
+        key: 'admin',
+        value: lnBitsUser.admin
+      }, {
+        key: 'password',
+        value: lnBitsUser.password
+      }]
+
+      const walletIdentifier = {
+        provider: process.env.WALLET_PROVIDER,
+        privateKey: lnBitsUser.id,
+        properties: walletProperties,
+        wallets: lnBitsUser.wallets
+      }
+
+      await this.broker.emit('nostr-events.user.created', {
+        event: profileEvent,
+        userId,
+        nprofile
+      })
+
 
       return {
         userId,
-        identifier: {
-          ...identifier,
-          privateKey: nsec,
-          
-        },
+        identifiers: [
+          nostrIdentifier,
+          walletIdentifier
+        ],
       }
     },
 
@@ -282,95 +152,20 @@ module.exports = {
         website: website || `www.${process.env.NODE_DOMAIN}`,
         picture: picture ? picture : '',
         banner: banner ? banner : '',
-        username,
-        fullName,
+        display_name: username,
+        name: fullName,
         about,
         nip05,
         lud16
       })
 
-      await this.broker.emit('nostr-events.user.created', {
-        event: profileEvent,
-        userId,
-        nprofile
-      })
-
-      const lnBitsUser = await this.broker.call('lnbits.createUser', {
-        username,
-        walletName: `${username}-merchant-wallet`,
-        email: nip05,
-        password: nsec
-      })
-
-      // {
-      //     id: '6c120fa5debcf20ab0b44407af85c5e3',
-      //     name: 'madGrowr',
-      //     admin: 'bc297e571854bbd84f44f813aef85004',
-      //     email: 'mad@growr.xyz',
-      //     password: '!Gr3w',
-      //     wallets: [
-      //       {
-      //         id: '829c490cc5e1883a3a3465a25f26754a',
-      //         admin: 'bc297e571854bbd84f44f813aef85004',
-      //         name: 'nostr-merch-wallet',
-      //         user: '6c120fa5debcf20ab0b44407af85c5e3',
-      //         adminkey: '51837ea61b6592e99a34dc12e4901c8e',
-      //         inkey: '81c3e32c397891baa2a4b5be1ac3cbf6'
-      //       }
-      //     ]
-      //   }
-
       return {
         profileEvent,
         nprofile,
         npub,
-        nsec,
-        lnBitsUserId: lnBitsUser.id,
-        lnBitsAdminKey: lnBitsUser.admin,
-        lnBitsWallet: lnBitsUser.wallets[0]
+        nsec
       }
-
     },
-
-
-
-    async getAgent(identity) {
-      const { privateKey } = identity.identity
-      const agent = await GrowrAgent.getAgent({
-        didConfig: {
-          privateKey: privateKey.substring(2),
-          networkName: ENUMS.networkConfigs[process.env.BLOCKCHAIN].provider[process.env.BC_NETWORK].name
-        },
-        providerConfig: {
-          networks: [ENUMS.networkConfigs[process.env.BLOCKCHAIN].provider[process.env.BC_NETWORK]]
-        },
-        networkConfig: ENUMS.networkConfigs[process.env.BLOCKCHAIN].network[process.env.BC_NETWORK]
-      })
-      return agent
-    },
-
-    // entityToRes(entity, fields) {
-
-    //   return Object.fromEntries(
-    //     Object.entries(entity).filter(
-    //       ([k, v]) => fields.includes(k) ? [k, v] : []
-    //     )
-    //   )
-    // },
-
-    async createPresentation(identity, agent, types) {
-      const vcs = identity.vcs.filter(vc => types.includes(vc.type))
-      const jwts = vcs.map(vc => vc.vc)
-      const vp = await agent.VC.createPresentation(jwts)
-      return vp
-    },
-
-    // async getVcs(agent, types) {
-    //   const user = await ctx.call('identity-resolver.find', {
-    //     query: { did: agent.did, valid: true } })
-    //   return user.vcs
-    // },
-
   },
 
   hooks: {

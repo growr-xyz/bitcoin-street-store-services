@@ -2,7 +2,7 @@
 
 const nostr = require('nostr-tools')
 const crypto = require('crypto')
-const secp = (...args) => import('@noble/secp256k1').then(({default: secp}) => secp(...args));
+const secp = (...args) => import('@noble/secp256k1').then(({ default: secp }) => secp(...args));
 
 const {
   Kind,
@@ -82,13 +82,17 @@ class NostrClientAdapter {
     // }
     const profileEvent = this.createEvent(Kind.Metadata, JSON.stringify(profile))
     if (profileEvent) {
-      await this.transmitEvent(profileEvent)
+      try {
+        await this.transmitEvent(profileEvent)
+      } catch (err) {
+        console.log(err)
+      }
       const nprofile = nip19.nprofileEncode({ pubkey: this.pk, relays: this.relays })
       return {
         profileEvent,
         nprofile,
         npub: this.npub,
-      } 
+      }
     } else {
       throw new Error('Failed to create profile')
     }
@@ -128,16 +132,16 @@ class NostrClientAdapter {
     return this.createEvent(Kind.BadgeDefinition, '', tags)
   }
 
-  awardBadge(awardContent) {
+  // awardBadge(awardContent) {
 
-    pubkey: string
-    badgeDefRef: string
-    badgeDefRefRelay?: string
-    awardedPubkey: string
-  
+  //   pubkey: string
+  //   badgeDefRef: string
+  //   badgeDefRefRelay?: string
+  //   awardedPubkey: string
 
-    return this.createEvent(Kind.BadgeAward, awardContent)
-  }
+
+  //   return this.createEvent(Kind.BadgeAward, awardContent)
+  // }
 
   getZapNotes(filter = {}) {
     return this.pool.sub(this.relays, [{
@@ -165,7 +169,12 @@ class NostrClientAdapter {
   async transmitEvent(event) {
     this.transmitted = false
     this.pool.publish(this.relays, event)
-    return await this.pool.get(this.relays, { id: event.id })
+    try {
+      const result = await this.pool.get(this.relays, { id: event.id })
+      return result
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   // SINGLE RELAY methods

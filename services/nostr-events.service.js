@@ -4,10 +4,14 @@
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
+const nostr = require('nostr-tools')
+
+const {
+  Kind,
+} = nostr
 
 const DbService = require('../mixins/db.mixin')
 const { EventModel } = require('../models')
-
 const locale = process.env.LOCALE || 'en'
 
 module.exports = {
@@ -81,10 +85,10 @@ module.exports = {
   //  */
 
   methods: {
-    async storeEvent(event) {
+    async storeEvent({event}) {
       return await this.actions.create({
-        uuid: event.id,
-        kind: event.kind,
+        eventId: event.id,
+        kind: Kind.Metadata,
         rawJson: JSON.stringify(event),
       })
     }

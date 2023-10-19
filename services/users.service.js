@@ -266,27 +266,6 @@ module.exports = {
       }
     },
 
-    createMerchantIdentity: {
-      params: {
-        merchantId: { type: 'string', required: true },
-      },
-      async handler(ctx) {
-        const merchant = await this.actions.get({ id: ctx.params.merchantId })
-        // kind - 0
-        const event = {
-          username: merchant.username,
-          about: merchant.about,
-          picture: merchant.picture,
-          nip05: `${merchant.username}@bss.biz`,
-          lud16: merchant.walletAddress,
-          banner: merchant.banner,
-          website: merchant.website || 'bss.biz'
-        }
-
-
-      }
-    },
-
     // TODO [BSS] Modify to new interface
     updateMerchant: {
       params: {

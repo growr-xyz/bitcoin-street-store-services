@@ -21,5 +21,5 @@ module.exports = {
   ProductModel: require('./product.model').ProductModel,
   EventModel: require('./nostr-market-events.model').EventModel,
   // AgentModel: mongoose.model('Agent', AgentSchema),
-  // IdentityModel: mongoose.model('Identity', IdentitySchema)
+  IdentityModel: require('./identity.model').IdentityModel,
 };

@@ -5,11 +5,14 @@ const { Schema } = mongoose;
 const IdentifierSchema = new Schema({
   provider: { type: String },
   privateKey: { type: String }, // TODO Salt with PIN
-  wallet: { type: String, required: false },
-  credentials: [{
-    type: { type: String },
-    value: { type: String }
+  properties: [{
+    key: { type: String },
+    value: { type: String },
   }],
+  wallets: [{
+    provider: { type: String },
+    wallet: mongoose.Schema.Types.Mixed,  
+  }]
 }, { timestamps: true });
 
 // Define the Identity schema

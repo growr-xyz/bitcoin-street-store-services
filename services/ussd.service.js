@@ -185,16 +185,22 @@ module.exports = {
         user = await ctx.call('users.setPin', { user, pin })
 
         // TODO [BSS] create lnbits wallet + identity ?
-
-        // await ctx.call('users.createIdentity', {
-
-        // })
-
-        // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
+        ctx.meta.user = user
+        await ctx.call('identity.createIdentity', {
+          props: {
+            username: user.username,
+            fullName: user.name,
+            about: user.about,
+            picture: user.picture,
+            nip05: `${user.username}@${process.env.DOMAIN}`,
+            lud16: user.walletAddress,
+            banner: user.banner,
+            website: user.website || process.env.DOMAIN,
+          }
+        })
         user.status = ENUMS.userStates.REGISTERED
         await ctx.call('users.update', { id: user._id, ...user })
-        // await ctx.call('identity.setSession') // TODO uncomment this
-
+        await ctx.call('identity.setSession') // TODO uncomment this
         await menu.session.set('user', user)
         await menu.session.set('pinChecked', true)
         menu.con(messages[locale]['members.createIdentity.identityCreated'])
@@ -483,7 +489,7 @@ module.exports = {
             phoneNumber: args.phoneNumber
           }
         }))[0]
-        ctx.meta.user = { ...user, ...{ ussdSession: args.sessionId } }
+        ctx.meta.user = { ...user, ...{ session: args.sessionId } }
         return await this.menu.run(args)
       }
     },

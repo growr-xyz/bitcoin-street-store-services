@@ -31,7 +31,7 @@ module.exports = {
 
     createProfile: {
       params: {
-        name: 'string|required',
+        name: 'string|optional',
         website: 'string|optional',
         about: 'string|optional',
         display_name: 'string|optional',
@@ -41,8 +41,8 @@ module.exports = {
         banner: 'string|optional'
       },
       async handler(ctx) {
-        const { sk } = await this.actions.createKeyPair()
-        const ndsAdapter = new NDSAdapter({ sk })
+        // const { sk } = await this.actions.createKeyPair()
+        const ndsAdapter = new NDSAdapter()
 
         const display_name = ctx.params.display_name ? 
           ctx.params.display_name : 
@@ -104,9 +104,9 @@ module.exports = {
       }
     },
 
-    createBadge: {
+    // createBadge: {
 
-    },
+    // },
     
     getZapRequests: {
       params: {
@@ -241,18 +241,18 @@ module.exports = {
   },
 
   methods: {
-    async createIdentity({params, props, ctx}) {
+    // async createIdentity({params, props, ctx}) {
 
-      const {
-        userId,
-        fullName,
-        identifier
-      } = params
+    //   const {
+    //     userId,
+    //     fullName,
+    //     identifier
+    //   } = params
 
-      const { profileEvent, nprofile, npub } = await this.actions.createProfile({...props, name: fullName, identifier })
+    //   const { profileEvent, nprofile, npub } = await this.actions.createProfile({...props, name: fullName, identifier })
 
       
-    }
+    // }
   },
 
   async created() { 
