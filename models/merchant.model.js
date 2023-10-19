@@ -38,14 +38,14 @@ const MerchantSchema = new Schema({
     type: String,
     description: 'Website of the merchant or agent'
   },
-  stalls:  [{
+  stalls: [{
     type: Schema.Types.ObjectId,
     ref: 'Stall',
     description: 'Id of the stall'
   }],
   status: {
     type: String,
-    enum : ['Invited', 'Confirmed', 'Active', 'Deactivated'],
+    enum: ['Invited', 'Confirmed', 'Active', 'Deactivated'],
     default: 'Invited',
     description: 'Status of the merchant'
   },
@@ -53,23 +53,28 @@ const MerchantSchema = new Schema({
     type: String,
     required: true,
     description: 'Unique identifier of the agent who created the merchant',
- },
- eventId: {
-  type : Schema.Types.ObjectId, 
-  ref : 'Event', 
-  description : 'Id of the NOSTR event'
-},
-otp: {
-  value: {
-    type: String,
   },
-  validUntil: {
-    type: String,
+  eventId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Event',
+    description: 'Id of the NOSTR event'
   },
-  validated: {
-    type: Boolean,
-    default: false
-  }}
+  profile: {
+    type: String,
+    description: 'user nprofile'
+  },
+  otp: {
+    value: {
+      type: String,
+    },
+    validUntil: {
+      type: String,
+    },
+    validated: {
+      type: Boolean,
+      default: false
+    }
+  }
 }, { timestamps: true });
 
 

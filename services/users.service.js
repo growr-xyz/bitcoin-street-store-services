@@ -246,7 +246,7 @@ module.exports = {
 
         if (!user) {
 
-          const stall = await ctx.call('stalls.create', {...defaultStall})
+          const stall = await ctx.call('stalls.create', { ...defaultStall })
 
           user = await this.actions.create({
             ...ctx.params,
@@ -269,7 +269,7 @@ module.exports = {
 
     createMerchantIdentity: {
       params: {
-        merchantId: { type:'string', required: true },
+        merchantId: { type: 'string', required: true },
       },
       async handler(ctx) {
         const merchant = await this.actions.get({ id: ctx.params.merchantId })
@@ -480,6 +480,20 @@ module.exports = {
   */
 
   events: {
+    'users.updateProfile': {
+      async handler({ userId, nprofile, eventId }) {
+        await ctx.call('users.update', {
+          id: userId,
+          update: {
+            $set: {
+              profile: nprofile,
+              eventId
+            }
+          }
+        })
+        return true
+      }
+    }
   },
 
   // /**

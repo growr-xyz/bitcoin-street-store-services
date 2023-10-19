@@ -77,14 +77,12 @@ module.exports = {
         }
         const newIdentity = {
           userId: user._id,
-          fullName: user.fullName || null,
           identifier: {
             provider: process.env.IDENTITY_PROVIDER,
-          },
-          createdAt: Date.now(),
-          updatedAt: Date.now()
+          }
         }
-        const identityToStore = this.createIdentity({ params: newIdentity, props: ctx.params.props, ctx })
+        const identityToStore = await this.createIdentity({ params: newIdentity, props: ctx.params.props, ctx })
+
         if (props && Object.keys(props).length > 0) {
           if (props.createWalletAddress) {
             identityToStore.identifier.walletAddress = await this.createWalletAddress()

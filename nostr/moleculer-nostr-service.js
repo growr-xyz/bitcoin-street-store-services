@@ -41,7 +41,7 @@ module.exports = {
         banner: 'string|optional'
       },
       async handler(ctx) {
-        const { sk } = await this.actions.createNewKeyPair()
+        const { sk } = await this.actions.createKeyPair()
         const ndsAdapter = new NDSAdapter({ sk })
 
         const display_name = ctx.params.display_name ? 
