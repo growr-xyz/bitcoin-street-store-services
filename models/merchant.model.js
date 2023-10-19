@@ -69,7 +69,10 @@ otp: {
   validated: {
     type: Boolean,
     default: false
-  }}
+  }},
+  pin: {
+    type: String
+  }
 }, { timestamps: true });
 
 

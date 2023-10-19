@@ -39,12 +39,13 @@ module.exports = {
     /**
      * Register Lender
      */
-    // find: {
-    //   async handler(ctx) {
-    //     const entities = await this.adapter.find(ctx.params);
-    //     return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
-    //   }
-    // },
+     find: {
+       async handler(ctx) {
+         const entities = await this.adapter.find(ctx.params).lean();
+         //return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
+         return entities
+       }
+     },
 
     addProduct: {
       async handler(ctx) {
@@ -57,7 +58,21 @@ module.exports = {
         // return await this.transformDocuments(ctx, {}, entity);
         return entity;
       }
-    }
+    },
+
+    updateQuantity: {
+      params: {
+        product: 'object',
+        quantity: 'string'
+      },
+      async handler(ctx) {
+        const { product, quantity } = Object.assign({}, ctx.params)
+        const upd = await this.adapter.updateById(product._id, {
+          $set: { quantity: quantity }
+        })
+        return upd._doc
+      },
+    },
 
 
   },

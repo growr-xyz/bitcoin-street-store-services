@@ -181,10 +181,9 @@ module.exports = {
           menu.end(messages[locale]['pinNotMatch']) // TODO - maybe we can return the user to confirm the PIN again
           return
         }
-        const user = await menu.session.get('user')
+        let user = await menu.session.get('user')
         
-        /*
-        await ctx.call('users.setPin', { user, pin })
+        user = await ctx.call('users.setPin', { user, pin })
 
         // TODO [BSS] create lnbits wallet + identity ?
 
@@ -193,10 +192,10 @@ module.exports = {
         // })
 
         // await ctx.call('identity.createWallet') // TODO [now] move to user service!!!!
-        user.state = ENUMS.userStates.REGISTERED
+        user.status = ENUMS.userStates.REGISTERED
         await ctx.call('users.update', { id: user._id, ...user })
-        await ctx.call('identity.setSession') 
-        */ // TODO - uncomment this
+        // await ctx.call('identity.setSession') // TODO uncomment this
+  
         await menu.session.set('user', user)
         await menu.session.set('pinChecked', true)
         menu.con(messages[locale]['members.createIdentity.identityCreated'])
@@ -214,7 +213,7 @@ module.exports = {
           menu.end(messages[locale]['invalidUser']);
           return
         } 
-        menu.con(messages[locale]['members.createIdentity.profile'](user.username, user.walletAddress))
+        menu.con(messages[locale]['members.createIdentity.profile'](user.username, user.walletAddress, user.status))
       },
       next: {
         // eslint-disable-next-line no-useless-escape
@@ -258,8 +257,16 @@ module.exports = {
           return
         } 
         // get merchant products
-        let products = [];
-        // TODO - get products from products.service
+        // TODO: fix the error below
+        const products = await ctx.call('products.find', {query: {  merchantId: user._id }})
+        /*
+        const products = [
+          { _id: '123', name: 'product A', quantity: 5},
+          { _id: '555', name: 'product B', quantity: 8}
+        ]
+        */
+        // store products array to the session
+        await menu.session.set('products', products);
         menu.con(messages[locale]['members.products'](products))
       },
       next: {
@@ -270,15 +277,17 @@ module.exports = {
 
     menu.state('members.products.quantity', {
       run: async() => {
-        const productNo = menu.val
+        // get selected product from the menu
+        const productNo = Number.parseInt(menu.val);
+        // store selected product in the session
         await menu.session.set('productNo', productNo);
-        // get product details
-        let product = {
-          productName: '',
-          quantity: 0
-        };
-        // TODO - get product details from products.service by productNo
-        menu.con(messages[locale]['members.products.quantity'](product.productName, product.quantity))
+        // get product details from the session
+        const product = (await menu.session.get('products'))[productNo-1];
+        if (!product) {
+          menu.end(messages[locale]['invalidProduct']);
+          return
+        }
+        menu.con(messages[locale]['members.products.quantity'](product.name, product.quantity))
       },
       next: {
         '*\\d': 'members.products.quantityUpdated',
@@ -288,9 +297,13 @@ module.exports = {
 
     menu.state('members.products.quantityUpdated', {
       run: async() => {
+        // get quantity from the menu
+        const quantity = Number.parseInt(menu.val)
+        // get selected product and product object from the session
         const productNo = await menu.session.get('productNo');
-        const quantity = menu.val
-        // TODO - update quantity by productNo
+        const product = (await menu.session.get('products'))[productNo-1];
+        // update product quantity:
+        await ctx.call('products.updateQuantity', { product, quantity });
         menu.con(messages[locale]['members.products.quantityUpdated'])
       },
       next: {
@@ -433,7 +446,7 @@ module.exports = {
           menu.end(messages[locale]['invalidUser']);
           return
         } 
-        menu.con(messages[locale]['members.profile'](user.username, user.walletAddress))
+        menu.con(messages[locale]['members.profile'](user.username, user.walletAddress, user.status))
       },
       next: {
         // eslint-disable-next-line no-useless-escape

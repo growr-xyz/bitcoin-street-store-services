@@ -167,7 +167,7 @@ module.exports = {
         const upd = await this.adapter.updateById(user._id, {
           $set: { pin: pinString }
         })
-        return upd
+        return upd._doc
       },
     },
 
