@@ -120,9 +120,7 @@ module.exports = {
     find: {
       async handler(ctx) {
         const entities = await this.adapter.find(ctx.params);
-        return entities;
-        //TODO: uncomment this:
-        //return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
       }
     },
 

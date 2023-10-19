@@ -143,12 +143,10 @@ module.exports = {
         const user = await menu.session.get('user')
         const otp = menu.val
         try {
-          /*
           if (!(await ctx.call('users.validateOtp', { user, otp }))) {
             menu.end(messages[locale]['wrongOtp'])
             return
           }
-          */ // TODO: uncomment this
           menu.con(messages[locale]['members.createIdentity.setPin'])
         } catch (e) {
           menu.end(e.message)
