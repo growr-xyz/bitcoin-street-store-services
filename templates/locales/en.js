@@ -24,6 +24,7 @@ module.exports = {
   'pinNotMatch': 'Pin does not match!',
   'wrongOtp': 'Wrong OTP.',
   'noUser': 'You are not invited.',
+  'invalidUser': 'You are not authenticated.',
   'end': 'Good bye!',
 
   //onboarding messages
@@ -40,12 +41,10 @@ module.exports = {
   'members.createIdentity.identityCreated': `Your PIN was set and your merchant identity is created.\n
 1. Continue
 0. Exit`,
-  'members.createIdentity.profile': (name, username, about, wallet) => {
+  'members.createIdentity.profile': (username, wallet) => {
   return `Congratulations! You have successfully created your identity!
 Your profile info:
-Name: ${name}
 Username: ${username}
-About: ${about}
 Wallet: ${wallet}\n
 1. Continue
 0. Exit`
@@ -144,16 +143,14 @@ Current balance: ${balance}\n
   },
   'members.wallet.change': 'Enter new wallet address:',
   'members.wallet.changedAddress': (wallet) => {
-    return `You new withdraw wallet address is: ${wallet}\n
+    return `Your new withdraw wallet address is: ${wallet}\n
 1. Back to main Menu`
   },
 
-  'members.profile': (name, username, about, wallet) => {
+  'members.profile': (username, wallet) => {
   return `Congratulations! You have successfully created your identity!
 Your profile info:
-Name: ${name}
 Username: ${username}
-About: ${about}
 Wallet: ${wallet}\n
 1. Continue`
   },
