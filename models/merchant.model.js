@@ -72,6 +72,9 @@ otp: {
   }},
   pin: {
     type: String
+  },
+  session: {
+    type: String
   }
 }, { timestamps: true });
 

@@ -177,8 +177,9 @@ module.exports = {
         pin: { type: 'string', required: true }
       },
       async handler(ctx) {
-        const { user, pin } = Object.assign({}, ctx.params)
-        if (await bcrypt.compare(pin, user.pin)) {
+        const { pin } = Object.assign({}, ctx.params)
+        const fullUser = await this.adapter.findById(ctx.params.user._id)
+        if (await bcrypt.compare(pin, fullUser.pin)) {
           return true
         }
         return false
@@ -244,7 +245,7 @@ module.exports = {
 
         if (!user) {
 
-          const stall = await ctx.call('stalls.create', {...defaultStall})
+          const stall = await ctx.call('stalls.create', { ...defaultStall })
 
           user = await this.actions.create({
             ...ctx.params,
@@ -267,7 +268,7 @@ module.exports = {
 
     createMerchantIdentity: {
       params: {
-        merchantId: { type:'string', required: true },
+        merchantId: { type: 'string', required: true },
       },
       async handler(ctx) {
         const merchant = await this.actions.get({ id: ctx.params.merchantId })
@@ -370,15 +371,9 @@ module.exports = {
       },
       async handler(ctx) {
         const { user, otp } = Object.assign({}, ctx.params)
-        if ((await this.validateOtp(user, otp))) {
-          user.otp.validated = true
-          // try {
-          await ctx.call('users.update', { id: user._id, ...user })
-          // } catch (e) {
-          //   console.log('Error539:', e.message);
-          //   console.log('Error540:', e.stack);
-          // }
-
+        const fullUser = await this.adapter.findOne({ id: user._id })
+        if ((await this.validateOtp(fullUser, otp))) {
+          await ctx.call('users.update', { id: user._id, otp: { validated: true  } })
         }
         return user
       }
