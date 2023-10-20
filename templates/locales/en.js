@@ -106,7 +106,7 @@ Enter new quantity:`
     let ordersText = ''
     let i = 1
     for (const order of orders) {
-      ordersText += `${i}. ${order.customerUserName} | ${order.price} ${order.currency} ${order.paid?"Paid":""} ${order.shipped?"& Shipped":""} \n`
+      ordersText += `${i}. ${order.customerUserName} | ${order.price} ${order.currency} ${order.paid?"| Paid":""} ${order.shipped?"& Shipped":""} \n`
       i += 1
     }
     return `Pending orders:
@@ -130,6 +130,7 @@ User: ${user}
 Message: ${message}\n
 1. Reply to user
 2. Ship order
+3. Enter delivery code
 0. Exit`
   },
   'members.orders.orderMessage': (user) => {
@@ -151,8 +152,8 @@ Message: ${message}\n
   },
 
   'members.wallet': (wallet, balance) => {
-    return `Wallet address: ${wallet}
-Current balance: ${balance}\n
+    return `Current store balance: ${balance} sats\n
+Withdrawal wallet address: ${wallet}\n
 1. Change wallet
 0. Exit
     `
@@ -164,7 +165,7 @@ Current balance: ${balance}\n
   },
 
   'members.profile': (username, wallet, status) => {
-  return `Your profile info:юн
+  return `Your profile info:
 Username: ${username}
 Wallet: ${wallet}
 Status: ${status}\n

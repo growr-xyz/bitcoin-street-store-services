@@ -200,6 +200,20 @@ module.exports = {
       }
     },
 
+    updateWallet: {
+      params: {
+        user: 'object',
+        walletAddress: 'string'
+      },
+      async handler(ctx) {
+        const { user, walletAddress } = Object.assign({}, ctx.params)
+        const upd = await this.adapter.updateById(user._id, {
+          $set: { walletAddress: walletAddress }
+        })
+        return upd._doc
+      },
+    },
+
     // TODO [BSS] Modify to new interface
     inviteMerchant: {
       params: {
@@ -227,7 +241,7 @@ module.exports = {
           user = await this.actions.create({
             ...ctx.params,
             id: crypto.randomUUID(),
-            createdBy: ctx.meta.user.npub,
+            createdBy: ctx.meta.user?.npub || 'TEST',
             stalls: [stall._id],
 
           })
@@ -236,9 +250,11 @@ module.exports = {
 
           const otp = await this.generateOTP(user._id)
           this.logger.info('user OTP::', otp) // TEMP
-          const agent = await ctx.call('agents.get', {id: ctx.meta.user._id})
-          agent.merchants.push(user)
-          await ctx.call('agents.update', {id: agent._id, ...agent})
+          if (process.env.RESTAPI_AUTH === undefined || process.env.RESTAPI_AUTH === true) {
+            const agent = await ctx.call('agents.get', {id: ctx.meta.user._id})
+            agent.merchants.push(user)
+            await ctx.call('agents.update', {id: agent._id, ...agent})
+          }
           return user
         } else {
           throw new MoleculerClientError('User with this phone number exists')
