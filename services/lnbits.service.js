@@ -234,7 +234,6 @@ module.exports = {
       },
       async handler(ctx) {
         const { product, adminKey } = Object.assign({}, ctx.params)
-        console.log(JSON.stringify(product, null, 2))
         try {
           const resp = await ctx.call('lnbits.post', {
             url: `${basePath}/nostrmarket/api/v1/product`,
@@ -252,11 +251,30 @@ module.exports = {
           console.log(err)
         }
       }
+    },
+
+    getOrders: {
+      params: {
+        adminKey: 'string',
+      },
+      async handler(ctx) {
+        const { adminKey } = Object.assign({}, ctx.params)
+        try {
+          const resp = await ctx.call('lnbits.get', {
+            url: `${basePath}/nostrmarket/api/v1/order`,
+            opt: {
+              headers: {
+                'X-API-KEY': adminKey
+              },
+              responseType: 'json',
+            }
+          })
+          return resp
+        } catch (err) {
+          console.log(err)
+        }
+
+      }
     }
-
-
-
   }
 }
-
-//   {
