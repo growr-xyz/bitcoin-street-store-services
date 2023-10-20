@@ -229,7 +229,6 @@ module.exports = {
             id: crypto.randomUUID(),
             createdBy: ctx.meta.user.npub,
             stalls: [stall._id],
-
           })
 
           await ctx.call('stalls.update', { id: stall._id, merchantId: user._id })
@@ -332,7 +331,7 @@ module.exports = {
         const { user, otp } = Object.assign({}, ctx.params)
         const fullUser = await this.adapter.findOne({ id: user._id })
         if ((await this.validateOtp(fullUser, otp))) {
-          await ctx.call('users.update', { id: user._id, otp: { validated: true  } })
+          await ctx.call('users.update', { id: user._id, otp: { ...user.otp, validated: true } })
         }
         return user
       }
@@ -440,7 +439,7 @@ module.exports = {
         const user = await this.broker.call('users.get', { id: userId._id.toString() })
         user.profile = nprofile
         user.eventId = eventId
-        const updated = await this.broker.call('users.update', { id: user._id.toString(), ...user})
+        const updated = await this.broker.call('users.update', { id: user._id.toString(), ...user })
         return true
       }
     }

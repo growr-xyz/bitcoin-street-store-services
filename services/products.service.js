@@ -74,15 +74,16 @@ module.exports = {
     listByStatus: {
       params: {
         merchantId: { type: 'string', required: true },
-        status: { type: 'string', required: true}
+        status: { type: 'string', required: true }
       },
       async handler(ctx) {
         const entities = await this.adapter.find(
-          { query: { 
-            merchantId: ctx.params.merchantId,
-            status: ctx.params.status
-          }
-        });
+          {
+            query: {
+              merchantId: ctx.params.merchantId,
+              status: ctx.params.status
+            }
+          });
         return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
       }
     },
@@ -108,8 +109,8 @@ module.exports = {
       async handler(ctx) {
         const merchantId = ctx.params.merchantId;
         const result = await this.adapter.updateMany(
-          { merchantId: { $eq: merchantId}, status: { $eq: 'Draft' } }, 
-          { $set: { status: 'Review'} },
+          { merchantId: { $eq: merchantId }, status: { $eq: 'Draft' } },
+          { $set: { status: 'Review' } },
           { multi: true }
         );
         // return result.modifiedCount; // TODO (low priority), result is null
@@ -123,9 +124,40 @@ module.exports = {
       },
       async handler(ctx) {
         const merchantId = ctx.params.merchantId;
+
+        const productsToPublish = await this.adapter.find({ query: { merchantId: { $eq: merchantId }, status: { $eq: 'Review' } } });
+        
+        // maybe move it to lnbits service?
+        const { wallet, stallId } = await ctx.call('identity.getLnBitsData')
+        const { adminkey } = wallet
+        for await (const product of productsToPublish) {
+          const { _id, name, description, price, quantity, categories, images } = product
+          const config = {
+            currency: product.currency,
+          }
+          const id = _id.toString()
+          const publishedProduct = await ctx.call('lnbits.publishProduct', {
+            product: {
+              id, 
+              stall_id: stallId,
+              name,
+              description,
+              price,
+              quantity,
+              images,
+              config
+            },
+            adminKey: adminkey,
+          })
+
+          await this.adapter.updateById(publishedProduct.id, {
+            $set: { status: 'Active' }
+          })
+        }
+
         const result = await this.adapter.updateMany(
-          { merchantId: { $eq: merchantId}, status: { $eq: 'Review' } }, 
-          { $set: { status: 'Active'} },
+          { merchantId: { $eq: merchantId }, status: { $eq: 'Review' } },
+          { $set: { status: 'Active' } },
           { multi: true }
         );
         // TODO - add here publishing to Nostr (all affected records); if this is first publishing, publish also the stall
