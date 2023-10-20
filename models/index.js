@@ -6,4 +6,5 @@ module.exports = {
   EventModel: require('./nostr-market-events.model').EventModel,
   AgentModel: require('./agents.model').AgentModel,
   IdentityModel: require('./identity.model').IdentityModel,
+  OrderModel: require('./orders.model').OrderModel,
 };

@@ -327,23 +327,25 @@ module.exports = {
 
     menu.state('members.orders', {
       run: async () => {
+        const { ctx } = menu.args;
         const user = await menu.session.get('user')
         if (!user) {
           menu.end(messages[locale]['invalidUser']);
           return
         }
         // get merchant orders
-        // TODO - get orders from orders.service
-        const orders = [
+        const orders = await ctx.call('orders.listPending', { merchantId: user._id });
+        /*const orders = [
           {
             products: [ {_id: 'some-id', name: 'some-name', quantity: 10}],
             currency: 'sats',
             price: 550,
-            paymentStatus: 'Paid',
+            paid: true,
             user: 'UserX',
             message: 'I need them urgently'
           }
         ];
+        */
         await menu.session.set('orders', orders);
         menu.con(messages[locale]['members.orders'](orders))
       },
@@ -369,8 +371,9 @@ module.exports = {
           order.products,
           order.currency,
           order.price,
-          order.paymentStatus,
-          order.user,
+          order.paid,
+          order.shipped,
+          order.customerUserName,
           order.message
         ))
       },
@@ -391,7 +394,7 @@ module.exports = {
           menu.end(messages[locale]['invalidOrder']);
           return
         }
-        menu.con(messages[locale]['members.orders.orderMessage'](order.user))
+        menu.con(messages[locale]['members.orders.orderMessage'](order.customerUserName))
       },
       next: {
         '*': 'members.orders.orderMessageSent'
@@ -409,8 +412,8 @@ module.exports = {
           menu.end(messages[locale]['invalidOrder']);
           return
         }
-        // TODO - send message to order.user
-        menu.con(messages[locale]['members.orders.orderMessageSent'](order.user))
+        // TODO - send message to order.customerPublicKey
+        menu.con(messages[locale]['members.orders.orderMessageSent'](order.customerUserName))
       },
       next: {
         '1': 'members.mainMenu'
@@ -419,6 +422,7 @@ module.exports = {
 
     menu.state('members.orders.shipping', {
       run: async () => {
+        const { ctx } = menu.args;
         // get order from the session
         const orderNo = await menu.session.get('orderNo');
         const order = (await menu.session.get('orders'))[orderNo - 1];
@@ -426,8 +430,9 @@ module.exports = {
           menu.end(messages[locale]['invalidOrder']);
           return
         }
-        // TODO: change order status of order._id to shipped
-        menu.con(messages[locale]['members.orders.shipping'](order.user))
+        // change order to shipped
+        await ctx.call('orders.shipOrder', { order });
+        menu.con(messages[locale]['members.orders.shipping'](order.customerUserName))
       },
       next: {
         '1': 'members.mainMenu'
@@ -452,6 +457,7 @@ module.exports = {
 
     menu.state('members.orders.deliveryCodeEntered', {
       run: async () => {
+        const { ctx } = menu.args;
         // get delivery code from the menu
         const code = menu.val
         // get order from the session
@@ -467,7 +473,9 @@ module.exports = {
           menu.end(messages[locale]['invalidCode']);
           return
         }
-        // TODO: if the code is valid, initiate withdrawal transaction
+        // if the code is valid:
+        await ctx.call('orders.deliverOrder', { order });
+        // TODO: initiate withdrawal transaction
         menu.con(messages[locale]['members.orders.deliveryCodeEntered'](order.price, order.currency))
       },
       next: {

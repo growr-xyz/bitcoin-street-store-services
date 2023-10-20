@@ -18,7 +18,7 @@ module.exports = {
     routes: [
       {
         path: "/api",
-        authentication: true,
+        authentication: process.env.RESTAPI_AUTH || true,
         whitelist: ["**"],
         // whitelist: [
         //   'ussd.menu',
@@ -31,7 +31,6 @@ module.exports = {
           methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
         },
         aliases: {
-          // 'REST /merchants': 'users',
           "GET /merchants": "users.list",
           "GET /merchants/:id": "users.get",
           "POST /merchants": "users.inviteMerchant",
@@ -41,13 +40,8 @@ module.exports = {
           "POST /merchants/:merchantId/products": "products.addProduct",
           "GET /merchants/:merchantId/products/:id": "products.get",
           "PUT /merchants/:merchantId/products/:id": "products.update",
-          // "GET /merchants/:merchantId/stalls": "stalls.list",
-          // "POST /merchants/:merchantId/stalls": "stalls.addStall",
-          // "PUT /merchants/:merchantId/stalls/:id": "stalls.update",
-          // "GET /merchants/:merchantId/shipping-zones": "shipping-zones.list",
-          // "POST /merchants/:merchantId/shipping-zones": "shipping-zones.create",
-          // "PUT /merchants/:merchantId/shipping-zones/:id":
-          //   "shipping-zones.update",
+          "GET /merchants/:merchantId/orders": "orders.list",
+          "POST /merchants/:merchantId/orders/": "orders.addOrder"
         },
         bodyParsers: {
           json: true,

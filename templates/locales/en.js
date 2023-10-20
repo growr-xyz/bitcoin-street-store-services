@@ -106,7 +106,7 @@ Enter new quantity:`
     let ordersText = ''
     let i = 1
     for (const order of orders) {
-      ordersText += `${i}. ${order.user} | ${order.price} ${order.currency} \n`
+      ordersText += `${i}. ${order.customerUserName} | ${order.price} ${order.currency} ${order.paid?"Paid":""} ${order.shipped?"& Shipped":""} \n`
       i += 1
     }
     return `Pending orders:
@@ -115,16 +115,17 @@ Enter order number to proceed:
 0. Exit
 99. See fulfilled orders`
   },
-  'members.orders.order': (products, currency, price, paymentStatus, user, message) => {
+  'members.orders.order': (products, currency, price, paid, shipped, user, message) => {
     let productsText = ''
     for (const product of products) {
-      productsText += `${product.name}: ${product.quantity}\n`
+      productsText += `${product.product.name}: ${product.quantity}\n`
     }
     return `Order:\n
 Products:
 ${productsText}
 Price: ${price} ${currency}
-Paid: ${paymentStatus}
+Paid: ${paid ? "Yes" : "No"}
+Shipped: ${shipped ? "Yes" : "No"}
 User: ${user}
 Message: ${message}\n
 1. Reply to user
