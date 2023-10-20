@@ -3,7 +3,13 @@ const { Schema } = mongoose;
 // Define the order schema
 const OrderSchema = new Schema(
   {
-    products: [ProductSchema],
+    products: [{
+      quantity: {
+        type: Number,
+        required: true,
+        description: "The quantity of the product",
+      }, product: ProductSchema
+    }],
     orderId: {
       type: String,
       required: true,
