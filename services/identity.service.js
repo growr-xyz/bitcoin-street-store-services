@@ -15,6 +15,7 @@ const identityMixin = require('../mixins/identity');
 const nostrService = require('./nostr.-service');
 const { IdentityModel } = require('../models');
 const getName = require('goofy-names');
+const { nip19 } = require('nostr-tools')
 
 module.exports = {
   name: 'identity',
@@ -91,12 +92,64 @@ module.exports = {
       }
 
       const { username, nip05 } = props
-    
+
       const lnBitsUser = await this.broker.call('lnbits.createUser', {
         username,
         walletName: `${username}-merchant-wallet`,
         email: nip05,
         password: nsec
+      })
+
+      await this.broker.emit('nostr-events.user.created', {
+        event: profileEvent,
+        userId,
+        nprofile
+      })
+
+      await this.broker.call('lnbits.activateExtension', {
+        extensionName: 'nostrclient',
+        userId: lnBitsUser.id,
+        active: true
+      })
+
+
+      await this.broker.call('lnbits.activateExtension', {
+        extensionName: 'nostrmarket',
+        userId: lnBitsUser.id,
+        active: true
+      })
+
+      const merchant = await this.broker.call('lnbits.createMerchant', {
+        privateKey: nip19.decode(nsec).data,
+        publicKey: nip19.decode(npub).data,
+        adminKey: lnBitsUser.wallets[0].adminkey
+      })
+
+      const stall = (await this.broker.call('stalls.find', { query: { merchantId: userId } }))[0]
+
+      const stallToPublish = {
+        wallet: lnBitsUser.wallets[0].id,
+        name: stall.name,
+        currency: stall.currency,
+        shipping_zones: [
+          {
+            id: stall.shipping[0]._id,
+            name: stall.shipping[0].name,
+            currency: stall.currency,
+            cost: stall.shipping[0].cost,
+            countries: stall.regions
+          }
+        ],
+        config: {
+          image_url: null,
+          description: stall.description,
+        },
+        pending: false
+      }
+
+      const publishedStall = await this.broker.call('lnbits.createStall', {
+        stall: stallToPublish,
+        adminKey: lnBitsUser.wallets[0].adminkey
       })
 
       const walletProperties = [{
@@ -111,6 +164,12 @@ module.exports = {
       }, {
         key: 'password',
         value: lnBitsUser.password
+      }, {
+        key: 'merchantId',
+        value: `${merchant.id}`
+      }, {
+        key: 'stallId',
+        value: `${publishedStall.id}`
       }]
 
       const walletIdentifier = {
@@ -119,13 +178,6 @@ module.exports = {
         properties: walletProperties,
         wallets: lnBitsUser.wallets
       }
-
-      await this.broker.emit('nostr-events.user.created', {
-        event: profileEvent,
-        userId,
-        nprofile
-      })
-
 
       return {
         userId,

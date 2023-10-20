@@ -79,7 +79,7 @@ module.exports = {
           userId: user._id,
           identifier: {
             provider: process.env.IDENTITY_PROVIDER,
-          }
+          } 
         }
         const identityToStore = await this.createIdentity({ params: newIdentity, props: ctx.params.props, ctx })
         await this.actions.create(identityToStore)
