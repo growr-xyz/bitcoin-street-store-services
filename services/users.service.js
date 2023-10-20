@@ -186,29 +186,6 @@ module.exports = {
       }
     },
 
-
-    // TODO [BSS] User NOSTR pubkey to resolve user
-
-    resolveUser: {
-      params: {
-        pubkey: 'string'
-      },
-      async handler(ctx) {
-        try {
-          const user = await this.actions.get({ pubkey: ctx.params.pubkey })
-          // if (!user) {
-          //   throw new Error('No such user')
-          // }
-          ctx.emit('user.logged', {
-            userId: user._id
-          })
-          return user
-        } catch (e) {
-          throw new MoleculerClientError('User not found')
-        }
-      }
-    },
-
     getByUserId: {
       params: {
         userId: 'string'
@@ -250,7 +227,7 @@ module.exports = {
           user = await this.actions.create({
             ...ctx.params,
             id: crypto.randomUUID(),
-            createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+            createdBy: ctx.meta.user.npub,
             stalls: [stall._id],
 
           })
@@ -259,6 +236,9 @@ module.exports = {
 
           const otp = await this.generateOTP(user._id)
           this.logger.info('user OTP::', otp) // TEMP
+          const agent = await ctx.call('agents.get', {id: ctx.meta.user._id})
+          agent.merchants.push(user)
+          await ctx.call('agents.update', {id: agent._id, ...agent})
           return user
         } else {
           throw new MoleculerClientError('User with this phone number exists')

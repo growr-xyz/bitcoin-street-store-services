@@ -91,6 +91,7 @@ module.exports = {
       }
 
       const { username, nip05 } = props
+    
       const lnBitsUser = await this.broker.call('lnbits.createUser', {
         username,
         walletName: `${username}-merchant-wallet`,

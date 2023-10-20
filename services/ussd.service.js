@@ -197,7 +197,7 @@ module.exports = {
             website: user.website || process.env.DOMAIN,
           }
         })
-        user.status = ENUMS.userStates.REGISTERED
+        user.status = 'Confirmed'
         await ctx.call('users.update', { id: user._id, ...user })
         await ctx.call('identity.setSession') // TODO uncomment this
         await menu.session.set('user', user)

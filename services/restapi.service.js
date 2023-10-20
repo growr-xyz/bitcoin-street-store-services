@@ -2,7 +2,8 @@ const ApiGateway = require("moleculer-web");
 const ENUMS = require("../config/enums");
 const { MoleculerClientError } = require("moleculer").Errors;
 const countryCodes = require("../config/countryCodes");
-const PassportMixin = require("../mixins/passport.mixin");
+const moment = require("moment");
+const { verifySignature, nip19 } = require('nostr-tools')
 
 module.exports = {
   name: "rest-api",
@@ -17,7 +18,7 @@ module.exports = {
     routes: [
       {
         path: "/api",
-        // authentication: true,
+        authentication: true,
         whitelist: ["**"],
         // whitelist: [
         //   'ussd.menu',
@@ -97,16 +98,16 @@ module.exports = {
       // Check for kind, method, and timestamp
       if (
         event.kind !== 27235 ||
-        !event.tags.find((tag) => tag[0] === "method" && tag[1] === method) ||
+        !event.tags.find((tag) => tag[0] === "method" && (tag[1] === method || tag[1] === '*')) ||
         !event.tags.find((tag) => tag[0] === "u" && tag[1] === url) ||
-        Math.abs(event.created_at - Math.floor(Date.now() / 1000)) > 60 // time window of 60 seconds
+        Math.abs(moment().diff(event.created_at, "seconds")) > 600 // time window of 60 seconds
       ) {
         if (event.kind !== 27235) {
           console.log("Failure: event.kind is not 27235. Found:", event.kind);
         }
 
         if (
-          !event.tags.find((tag) => tag[0] === "method" && tag[1] === method)
+          !event.tags.find((tag) => tag[0] === "method" && tag[1] === method || tag[1] === '*')
         ) {
           console.log(
             "Failure: No matching method tag found. Expected method:",
@@ -118,12 +119,10 @@ module.exports = {
           console.log("Failure: No matching u tag found. Expected u:", url);
         }
 
-        const timestampDifference = Math.abs(
-          event.created_at - Math.floor(Date.now() / 1000)
-        );
-        if (timestampDifference > 60) {
+        const timestampDifference = Math.abs(moment().diff(event.created_at, "seconds"));
+        if (timestampDifference > 600) {
           console.log(
-            "Failure: Timestamp is not within the 60 second window. Difference in seconds:",
+            "Failure: Timestamp is not within the 600 second window. Difference in seconds:",
             timestampDifference
           );
         }
@@ -143,8 +142,10 @@ module.exports = {
     async authenticate(ctx, route, req) {
       const auth = req.headers["authorization"];
       const method = req.method; // Extract method from request
-      const url = req.protocol + "://" + req.host; //+ req.originalUrl
-      console.log("authHeader", auth);
+      const url = process.env.SERVICES_DOMAIN + req.baseUrl
+      
+      // req.protocol + "://" + req.host; //+ req.originalUrl
+        console.log("authHeader", auth);
       if (!auth || !auth.startsWith("Nostr ")) {
         // Authentication failed
         throw new ApiGateway.Errors.UnAuthorizedError(
@@ -155,7 +156,11 @@ module.exports = {
       if (pubkey) {
         // Authentication succeeded
         // const user = { pubkey } // You might populate this object with additional user details if needed
-        const user = await ctx.call("users.resolveUser", { pubkey });
+        let user
+        user = await ctx.call("agents.resolveUser", { npub: nip19.npubEncode(pubkey) });
+        if (!user) {
+          user = await ctx.call("agents.create", { npub: nip19.npubEncode(pubkey) });
+        }
         return user;
       } else {
         // Authentication failed
