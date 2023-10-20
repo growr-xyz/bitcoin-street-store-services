@@ -127,13 +127,13 @@ module.exports = {
 
 
 
-    listOwnMerchants: {
-      async handler(ctx) {
-        const entities = await this.actions.find({ query: { createdBy: { $eq: ctx.meta.user.npub } } });
-        if (entities === null) entities = [] 
-        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {})));
-      }
-    },
+    // listOwnMerchants: {
+    //   async handler(ctx) {
+    //     const entities = await ctx.call('users.find', { query: { createdBy: ctx.meta.user.npub } });
+    //     console.log(entities);
+    //     return await Promise.all(entities);
+    //   }
+    // },
 
     // TODO [BSS] Change to agent
     /*registerLenderConsultant: {
