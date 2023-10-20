@@ -50,11 +50,12 @@ The Agent app is a web-based applications, built using React.js and Next.js. Aut
 
 ### LNBits
 
-TBD
+LNBits is a free and open-source system that allows you to create and manage Lightning wallets and accounts. 
+Via the LNBits API we can integrate easily with lightning payments and use it's plugins to make it the core financial system of our application.
 
 ### Marketplace app
 
-TBD
+Example NOSTR marketplace app that works according to the specifications in NIP-15
 
 # Running the services
 
@@ -75,13 +76,13 @@ You must configure the following environment variables:
 - `LOCALE` : Locale of the USSD interface, e.g. `en`
 - `SERVICES_DOMAIN` : e.g. `http://localhost:3333`
 - `NOSTR_RELAYS` : Address of the Nostr relay, e.g. `wss://relay.damus.io`
-- `NOSTR_DOMAIN` : TBD
+- `NOSTR_DOMAIN` : not used atm
 - `IDENTITY_PROVIDER`: `nostr`
 - `WALLET_PROVIDER` : `lnbits`
 - `LNBITS_ADMIN_KEY` : Admin key of the LN bits installation, e.g. `1b123123123123123123123123`
 - `LNBITS_URI` : e.g. Address (URL) of the LN bits installation
 - `RESTAPI_AUTH` : `true` by default, `false` for testing purposes only
-- `DOMAIN` : TBD
+- `DOMAIN` : Used for nip05 and website sufixes 
 - `TRACING_ENABLED` : `true` or `false`
 
 ## How to run it
