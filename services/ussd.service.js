@@ -333,7 +333,34 @@ module.exports = {
           menu.end(messages[locale]['invalidUser']);
           return
         }
-        // get merchant orders
+        // TODO - Move it out and create CRON or event driven reading of the orders
+        const { wallet } = await ctx.call('identity.getLnBitsData')
+        const { adminkey } = wallet
+        const rawOrders = await ctx.call('lnbits.getOrders', { adminKey: adminkey });
+
+        const ordersToStore = []
+
+        for (let order of rawOrders) {
+          let orderToStore = {}
+          const products = []
+          for await (let item of order.items) {
+            products.push({ product: item.product_id, quantity: item.quantity })
+          }
+          orderToStore.products = products
+          orderToStore.orderId = order.id
+          orderToStore.shippingAddress = order.address
+          orderToStore.customerPublicKey = order.public_key
+          orderToStore.customerUserName = order.conctac.email || 'Anon'
+          orderToStore.merchantId = (await ctx.call('users.find', { query: { npub: order.merchant_public_key } }))[0]._id
+          orderToStore.currency = order.extra.currency
+          ordersToStore.push(orderToStore)
+        }
+        
+        for await (let order of ordersToStore) {
+          await ctx.call('orders.addOrder', order)
+        }
+        // TODO END
+      
         const orders = await ctx.call('orders.listPending', { merchantId: user._id });
         /*const orders = [
           {

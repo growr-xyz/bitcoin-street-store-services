@@ -39,7 +39,7 @@ const OrderSchema = new Schema(
     currency: {
       type: String,
       description: "The currency of the order",
-      default: "SAT",
+      default: "sat",
     },
     price: {
       type: Number,
