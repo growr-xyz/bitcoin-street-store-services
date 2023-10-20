@@ -125,6 +125,15 @@ module.exports = {
       }
     },
 
+
+
+    listOwnMerchants: {
+      async handler(ctx) {
+        const entities = await this.actions.find({ query: { createdBy: { $eq: ctx.meta.user.npub } } });
+        return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {})));
+      }
+    },
+
     // TODO [BSS] Change to agent
     /*registerLenderConsultant: {
       params: {
@@ -251,9 +260,9 @@ module.exports = {
           const otp = await this.generateOTP(user._id)
           this.logger.info('user OTP::', otp) // TEMP
           if (process.env.RESTAPI_AUTH === undefined || process.env.RESTAPI_AUTH === true) {
-            const agent = await ctx.call('agents.get', {id: ctx.meta.user._id})
+            const agent = await ctx.call('agents.get', { id: ctx.meta.user._id })
             agent.merchants.push(user)
-            await ctx.call('agents.update', {id: agent._id, ...agent})
+            await ctx.call('agents.update', { id: agent._id, ...agent })
           }
           return user
         } else {
