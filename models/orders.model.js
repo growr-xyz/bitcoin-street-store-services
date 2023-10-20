@@ -29,7 +29,17 @@ const OrderSchema = new Schema(
       required: true,
       description: "The invoice identifier",
     },
-  })
+    paid: {
+      type: Boolean,
+      required: true,
+      description: "Whether the order has been paid",
+    },
+    shipped: {
+      type: Boolean,
+      required: true,
+      description: "Whether the order has been paid",
+    }
+  }, { timestamps: true })
 
 module.exports = {
   OrderSchema: OrderSchema,
