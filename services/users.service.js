@@ -96,7 +96,7 @@ module.exports = {
     //   },
     //   ussdSession: { type: 'sring', nullable: true, optional: true },
     // }
-    fields: ["_id", "phoneNumber", "username", "name", "walletAddress", "about", "picture", "banner", "website", "stalls", "status", "createdBy", "eventId"],
+    fields: ["_id", "phoneNumber", "username", "name", "walletAddress", "about", "picture", "banner", "website", "stalls", "status", "createdBy", "eventId", "npub"],
 
   },
   mixins: [
