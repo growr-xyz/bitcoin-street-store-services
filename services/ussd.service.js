@@ -197,7 +197,7 @@ module.exports = {
             website: user.website || process.env.DOMAIN,
           }
         })
-        user.status = 'Confirmed'
+        user.status = 'Active'
         await ctx.call('users.update', { id: user._id, ...user })
         await ctx.call('identity.setSession') // TODO uncomment this
         await menu.session.set('user', user)

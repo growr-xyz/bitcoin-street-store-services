@@ -223,8 +223,35 @@ module.exports = {
         await ctx.emit('nostr-events.stall.created', resp)
         return resp
       }
+    },
 
-
+    publishProduct: {
+      params: {
+        product: {
+          type: 'object',
+        },
+        adminKey: 'string',
+      },
+      async handler(ctx) {
+        const { product, adminKey } = Object.assign({}, ctx.params)
+        console.log(JSON.stringify(product, null, 2))
+        try {
+          const resp = await ctx.call('lnbits.post', {
+            url: `${basePath}/nostrmarket/api/v1/product`,
+            opt: {
+              headers: {
+                'X-API-KEY': adminKey
+              },
+              json: product,
+              responseType: 'json',
+            }
+          })
+          await ctx.emit('nostr-events.product.created', resp)
+          return resp
+        } catch (err) {
+          console.log(err)
+        }
+      }
     }
 
 

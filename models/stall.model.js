@@ -17,7 +17,7 @@ const StallSchema = new Schema(
     },
     currency: {
       type: String,
-      default: "SATS",
+      default: "sat",
       description: "The currency used by the stall",
     },
     shipping: [
@@ -43,7 +43,7 @@ const StallSchema = new Schema(
 const defaultStall = {
   name: "Default Stall",
   description: "Default Stall",
-  currency: "SATS",
+  currency: "sat",
   shipping: defaultShippingZone
 }
 

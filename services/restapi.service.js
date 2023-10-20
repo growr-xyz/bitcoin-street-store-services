@@ -18,7 +18,7 @@ module.exports = {
     routes: [
       {
         path: "/api",
-        authentication: process.env.RESTAPI_AUTH || true,
+        authentication: true,
         whitelist: ["**"],
         // whitelist: [
         //   'ussd.menu',

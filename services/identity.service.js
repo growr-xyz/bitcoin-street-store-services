@@ -49,7 +49,21 @@ module.exports = {
     /**
      * Request Verification 
      */
+    getLnBitsData: {
+      async handler(ctx) {
+        const user = ctx.meta.user
+        const identity = (await this.actions.find({ query: { userId: { $eq: user._id } } }))[0]
+        if (user.session !== identity.session) {
+          throw new MoleculerClientError(401, 'Invalid session')
+        }
+        const lnBitsCredentials = identity.identifiers.find(identifier => identifier.provider === process.env.WALLET_PROVIDER)
+        const wallet = lnBitsCredentials.wallets[0]
+        const stallId = lnBitsCredentials.properties.find(property => property.key === 'stallId').value
+        const merchantId = lnBitsCredentials.properties.find(property => property.key === 'merchantId').value
 
+        return { wallet, stallId, merchantId }
+      }
+    }
   },
 
 
