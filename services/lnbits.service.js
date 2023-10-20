@@ -161,13 +161,74 @@ module.exports = {
                 active: true
               }
             },
-            responseType: 'json'
+            responseType: 'json',
           }
         })
+
         console.log(resp)
         return (resp.extension === 'updated')
       }
+
+    },
+    createMerchant: {
+      params: {
+        "privateKey": "string",
+        "publicKey": "string",
+      },
+      async handler(ctx) {
+        const {
+          privateKey,
+          publicKey,
+          adminKey
+        } = Object.assign({}, ctx.params)
+        const resp = await ctx.call('lnbits.post', {
+          url: `${basePath}/nostrmarket/api/v1/merchant`,
+          opt: {
+            headers: {
+              'X-API-KEY': adminKey
+            },
+            json: {
+              private_key: privateKey,
+              public_key: publicKey,
+              config: {
+                active: true,
+              }
+            },
+            responseType: 'json',
+          }
+        })
+        return resp
+      }
+    },
+
+    createStall: {
+      params: {
+        stall: {
+          type: 'object',
+        },
+        adminKey: 'string',
+      },
+      async handler(ctx) {
+        const { stall, adminKey } = Object.assign({}, ctx.params)
+        const resp = await ctx.call('lnbits.post', {
+          url: `${basePath}/nostrmarket/api/v1/stall`,
+          opt: {
+            headers: {
+              'X-API-KEY': adminKey
+            },
+            json: stall,
+            responseType: 'json',
+          }
+        })
+        await ctx.emit('nostr-events.stall.created', resp)
+        return resp
+      }
+
+
     }
+
+
+
   }
 }
 
