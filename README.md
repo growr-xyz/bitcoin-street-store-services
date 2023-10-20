@@ -4,7 +4,7 @@
 
 ## Overview
 
-![Overall architecture](./architecture.svg)
+![Overall architecture](./documentation/architecture.svg)
 
 We are building a decentralized infrastructure for a borderless & censorship resistant commerce with **Bitcoin/Lightning** for the payments, **Nostr** as a decentralized marketplace, and **USSD** protocol for low-tech access.
 
