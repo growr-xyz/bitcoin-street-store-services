@@ -69,12 +69,13 @@ module.exports = {
   events: {
 
     'nostr-events.user.created': {
-      async handler({ event, userId, nprofile }) {
+      async handler({ event, userId, nprofile, npub }) {
         const createdEvent = await this.storeEvent(event);
         await this.broker.emit('users.updateProfile', {
           userId,
           nprofile,
-          eventId: createdEvent._id
+          eventId: createdEvent._id,
+          npub
         })
       }
     },

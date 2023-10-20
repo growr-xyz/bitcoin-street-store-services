@@ -19,6 +19,7 @@ const { MerchantModel } = require('../models')
 const crypto = require('crypto');
 const { defaultStall } = require('../models/stall.model')
 // const { BaseStrategy } = require('moleculer')
+const { nip19 } = require('nostr-tools')
 
 let messages
 const locale = process.env.LOCALE || 'en'
@@ -451,10 +452,11 @@ module.exports = {
 
   events: {
     'users.updateProfile': {
-      async handler({ userId, nprofile, eventId }) {
+      async handler({ userId, nprofile, eventId, npub }) {
         const user = await this.broker.call('users.get', { id: userId._id.toString() })
         user.profile = nprofile
         user.eventId = eventId
+        user.npub = (nip19.decode(npub)).data
         const updated = await this.broker.call('users.update', { id: user._id.toString(), ...user })
         return true
       }

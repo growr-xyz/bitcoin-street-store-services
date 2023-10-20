@@ -81,6 +81,10 @@ const MerchantSchema = new Schema({
   session: {
     type: String
   },
+  npub: {
+    type: String
+  }
+
 }, { timestamps: true });
 
 

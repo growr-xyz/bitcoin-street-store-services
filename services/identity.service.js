@@ -117,7 +117,8 @@ module.exports = {
       await this.broker.emit('nostr-events.user.created', {
         event: profileEvent,
         userId,
-        nprofile
+        nprofile,
+        npub
       })
 
       await this.broker.call('lnbits.activateExtension', {
