@@ -12,7 +12,6 @@ const utils = require('../middlewares/misc-util');
 const ENUMS = require('../config/enums');
 const NOSTRService = require('../nostr/moleculer-nostr-service')
 const identityMixin = require('../mixins/identity');
-const nostrService = require('./nostr.-service');
 const { IdentityModel } = require('../models');
 const getName = require('goofy-names');
 const { nip19 } = require('nostr-tools')

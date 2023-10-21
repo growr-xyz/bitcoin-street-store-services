@@ -60,6 +60,19 @@ module.exports = {
           urlencoded: { extended: true },
         },
       },
+      {
+        path: "/health",
+        authentication: false,
+        whitelist: ["rest-api.health"],
+        aliases: {
+          "GET /": "rest-api.health",
+        },
+        bodyParsers: {
+          json: true,
+          urlencoded: { extended: true },
+        },
+      },
+
     ],
   },
 
@@ -166,6 +179,12 @@ module.exports = {
   },
 
   actions: {
-
+    health: {
+      async handler(ctx) {
+        return {
+          status: "OK",
+        };
+      },
+    }
   },
 };
