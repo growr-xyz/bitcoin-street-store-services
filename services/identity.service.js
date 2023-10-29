@@ -62,9 +62,38 @@ module.exports = {
 
         return { wallet, stallId, merchantId }
       }
+    },
+
+    getNostrIdentity: async (ctx) => {
+      const user = ctx.meta.user
+      const identity = (await this.actions.find({ query: { userId: { $eq: user._id } } }))[0]
+      if (user.session !== identity.session) {
+        throw new MoleculerClientError(401, 'Invalid session')
+      }
+      const nostrIdentifier = identity.identifiers.find(identifier => identifier.provider === process.env.IDENTITY_PROVIDER)
+      return {
+        privateKey: nostrIdentifier.privateKey,
+        nprofile: nostrIdentifier.properties.find(property => property.key === 'nprofile').value,
+        npub: nostrIdentifier.properties.find(property => property.key === 'npub').value
+      }
+    },
+
+    getAllNostrPubKeys: async () => {
+      const aggregated = await IdentityModel.aggregate([
+        { $unwind: "$identifiers" },
+        { $match: { "identifiers.provider": "nostr" } },
+        { $unwind: "$identifiers.properties" },
+        { $match: { "identifiers.properties.key": "npub" } },
+        {
+          $group: {
+            _id: null,
+            npubValues: { $push: "$identifiers.properties.value" }
+          }
+        }
+      ])
+      return aggregated[0].npubValues
     }
   },
-
 
   /**
    * Events

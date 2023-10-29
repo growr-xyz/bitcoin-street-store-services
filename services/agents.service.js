@@ -22,7 +22,7 @@ module.exports = {
   },
   mixins: [
     DbService('agent', AgentModel),
-        // ConfigLoader(["site.**", "mail.**", "accounts.**"])
+    // ConfigLoader(["site.**", "mail.**", "accounts.**"])
   ],
 
   model: AgentModel,
@@ -51,15 +51,15 @@ module.exports = {
         npub: 'string'
       },
       async handler(ctx) {
-          const agent = (await this.actions.find({ query: {pubkey: ctx.params.pubkey} }))[0]
-          if (!agent) {
-            return null
-          }
-          ctx.emit('agent.logged', {
-            agentId: agent._id,
-            pubkey: agent.pubkey
-          })
-          return agent
+        const agent =(await this.actions.find({ query: { npub: ctx.params.npub } }))[0]
+        if (!agent) {
+          return null
+        }
+        ctx.emit('agent.logged', {
+          agentId: agent._id,
+          pubkey: agent.pubkey
+        })
+        return agent
       }
     },
 
@@ -67,7 +67,7 @@ module.exports = {
   },
   hooks: {
     before: {
-    
+
     },
 
     after: {
@@ -100,7 +100,7 @@ module.exports = {
   // /**
   //  * Service started lifecycle event handler
   //  */
-   async started() {},
+  async started() { },
 
   // /**
   //  * Service stopped lifecycle event handler

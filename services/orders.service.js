@@ -7,6 +7,7 @@
 
 const DbService = require('../mixins/db.mixin')
 const { OrderModel } = require('../models')
+const moleculerNostrService = require('../nostr/moleculer-nostr-service')
 
 module.exports = {
   name: 'orders',
@@ -19,6 +20,7 @@ module.exports = {
   },
   mixins: [
     DbService('order', OrderModel),
+    moleculerNostrService
   ],
 
   model: OrderModel,
@@ -75,11 +77,12 @@ module.exports = {
       },
       async handler(ctx) {
         const entities = await this.adapter.find(
-          { query: { 
-            merchantId: ctx.params.merchantId,
-            delivered: false
-          }
-        });
+          {
+            query: {
+              merchantId: ctx.params.merchantId,
+              delivered: false
+            }
+          });
         return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
       }
     },
@@ -110,6 +113,29 @@ module.exports = {
       },
     },
 
+    readOrders: {
+      params: {
+        filter: 'object|optional',
+      },
+      async handler(ctx) {
+        const { filter } = Object.assign({}, ctx.params)
+
+        const latestOrder = await this.adapter.findOne({ query: { merchantId: ctx.meta.user._id } })
+        
+        if (latestOrder) {
+          filter.since = Date(latestOrder.updatedAt).valueOf()
+        }
+
+        const identity = await ctx.call('nostr.getIdentity')
+        const orders = await this.service.getDMs({ sk: identity.privateKey, filter })
+
+
+
+        // const entities = await this.adapter.find(filter)
+        // return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity)))
+      }
+    }
+
   },
   hooks: {
     before: {
@@ -134,6 +160,21 @@ module.exports = {
   //  */
 
   methods: {
+    // TODO NOT FINISHED
+    async processDM({ event, ndsAdapter }) {
+      const decryptedEvents = await this.decryptDM({ event, ndsAdapter })
+      try {
+        const eventJson = JSON.parse(decryptedEvents)
+        // event is order
+        if (eventJson.content?.type && [0, 1, 2].includes(eventJson.content.type)) {
+          return eventJson
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    },
+
+
   },
 
   // /**

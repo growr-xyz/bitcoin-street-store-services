@@ -31,7 +31,7 @@ module.exports = {
           methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
         },
         aliases: {
-          "GET /merchants": "users.list",
+          "GET /merchants": "users.listOwnUsers",
           "GET /merchants/:id": "users.get",
           "POST /merchants": "users.inviteMerchant",
           "PUT /merchants/:id": "users.update",

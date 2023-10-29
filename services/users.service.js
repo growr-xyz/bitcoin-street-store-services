@@ -125,6 +125,17 @@ module.exports = {
       }
     },
 
+    listOwnUsers: {
+      async handler(ctx) {
+        return await this.actions.list({
+          query: {
+            createdBy: ctx.meta.user.npub
+          }
+        });
+        // return await Promise.all(entities.map(entity => this.transformDocuments(ctx, {}, entity.populate('stalls'))));
+      }
+    },
+
 
 
     // listOwnMerchants: {

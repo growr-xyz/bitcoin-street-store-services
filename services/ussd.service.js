@@ -350,7 +350,7 @@ module.exports = {
           orderToStore.orderId = order.id
           orderToStore.shippingAddress = order.address
           orderToStore.customerPublicKey = order.public_key
-          orderToStore.customerUserName = order.conctac.email || 'Anon'
+          orderToStore.customerUserName = order.contact.email || 'Anon'
           orderToStore.merchantId = (await ctx.call('users.find', { query: { npub: order.merchant_public_key } }))[0]._id
           orderToStore.currency = order.extra.currency
           ordersToStore.push(orderToStore)

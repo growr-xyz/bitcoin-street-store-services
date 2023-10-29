@@ -15,6 +15,8 @@ const {
   getEventHash,
   relayInit,
   nip19,
+  nip04,
+  nip44
 } = nostr
 
 class NostrClientAdapter {
@@ -67,6 +69,13 @@ class NostrClientAdapter {
     const enc = this.encryptDM(recipient, content)
     const event = this.createEvent(Kind.EncryptedDirectMessage, enc, [['p', recipient]])
     return await this.transmitEvent(event)
+  }
+
+  async decryptDM(event) {
+    const sender = event.pubkey
+    let _key = nip44.getSharedSecret(this.#sk, sender)
+    let decrypted = nip44.decrypt(_key, event.content)
+    return decrypted
   }
 
   async createProfile(profile) {
@@ -163,6 +172,14 @@ class NostrClientAdapter {
     return this.pool.sub(this.relays, [{
       kinds: [Kind.Metadata],
       'authors': [this.pk],
+    }])
+  }
+
+  async getDMs(filter = {}) {
+    return this.pool.sub(this.relays, [{
+      ...filter,
+      kinds: [Kind.EncryptedDirectMessage],
+      '#p': [this.pk],
     }])
   }
 

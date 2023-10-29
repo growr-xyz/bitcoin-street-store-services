@@ -1,6 +1,6 @@
 require('websocket-polyfill')
 const NDSAdapter = require('./moleculer-nostr-adapter')
-const { nip19, nip57 } = require('nostr-tools')
+const { nip19, nip57, nip44 } = require('nostr-tools')
 const getName = require('goofy-names');
 const crc = require('crc');
 
@@ -44,29 +44,29 @@ module.exports = {
         // const { sk } = await this.actions.createKeyPair()
         const ndsAdapter = new NDSAdapter()
 
-        const display_name = ctx.params.display_name ? 
-          ctx.params.display_name : 
+        const display_name = ctx.params.display_name ?
+          ctx.params.display_name :
           `${getName(ndsAdapter.npub)}`
 
-        const username = ctx.params.name ? 
-          ctx.params.name : 
+        const username = ctx.params.name ?
+          ctx.params.name :
           `${display_name.split(' ').join('_')}_${crc.crc1(ndsAdapter.npub)}`
-          
-        const about = ctx.params.about ? 
-          `${ctx.params.about}\n${username}@${this.settings.domain}` : 
+
+        const about = ctx.params.about ?
+          `${ctx.params.about}\n${username}@${this.settings.domain}` :
           `${username}@${this.settings.domain}`
 
-          const nip05 = ctx.params.nip05 ? 
-          ctx.params.nip05 : 
+        const nip05 = ctx.params.nip05 ?
+          ctx.params.nip05 :
           `${username}@${this.settings.domain}`
 
-          const lud16 = ctx.params.lud16 ? 
-          ctx.params.lud16 : 
+        const lud16 = ctx.params.lud16 ?
+          ctx.params.lud16 :
           `${username}@ln.${this.settings.domain}`
 
         const { profileEvent, nprofile, npub } = await ndsAdapter.createProfile({
-          ...ctx.params, 
-          name: username, 
+          ...ctx.params,
+          name: username,
           about,
           display_name,
           nip05,
@@ -83,7 +83,7 @@ module.exports = {
         text: 'string|required'
       },
       async handler(ctx) {
-        const { sk, text } = ctx.params
+        const { sk, text } = Object.assign({}, ctx.params)
         const ndsAdapter = new NDSAdapter({ sk })
         const post = ndsAdapter.createPost(text)
         await ndsAdapter.transmitEvent(post)
@@ -98,7 +98,7 @@ module.exports = {
         text: 'string|required'
       },
       async handler(ctx) {
-        const { sk, recipientPK, text } = ctx.params
+        const { sk, recipientPK, text } = Object.assign({}, ctx.params)
         const ndsAdapter = new NDSAdapter({ sk })
         return await ndsAdapter.createEncryptedDirectMessage(recipientPK, text)
       }
@@ -107,14 +107,38 @@ module.exports = {
     // createBadge: {
 
     // },
-    
+
+
+    getDMs: {
+      params: {
+        sk: 'string|required',
+        filter: 'object|optional',
+      },
+      async handler(ctx) {
+        const { sk, filter } = Object.assign({}, ctx.params);
+        const dms = []
+        const ndsAdapter = new NDSAdapter({ sk })
+        const sub = ndsAdapter.getDMs(filter)
+
+        sub.on('eose', async () => {
+          await Promise.all(dms.map(this.processDM))
+          resolve(dms)
+        })
+
+        sub.on('event', (event) => {
+          dms.push(event)
+        })
+      }
+
+    },
+
     getZapRequests: {
       params: {
         sk: 'string|required',
         filter: 'object|optional',
       },
       async handler(ctx) {
-        const { sk, filter } = ctx.params;
+        const { sk, filter } = Object.assign({}, ctx.params);
         const requests = []
         const zaps = []
         const ndsAdapter = new NDSAdapter({ sk, filter })
@@ -164,7 +188,7 @@ module.exports = {
         filter: 'object|optional',
       },
       async handler(ctx) {
-        const { sk, filter } = ctx.params
+        const { sk, filter } = Object.assign({}, ctx.params)
         const ndsAdapter = new NDSAdapter({ sk })
         const sub = await ndsAdapter.getFeed(filter)
         const posts = []
@@ -197,7 +221,7 @@ module.exports = {
         pubkey: 'string|optional',
       },
       async handler(ctx) {
-        const { npub, pubkey } = ctx.params
+        const { npub, pubkey } = Object.assign({}, ctx.params)
         let pk
         if (npub) {
           pk = (nip19.decode(userNpub)).data
@@ -241,6 +265,19 @@ module.exports = {
   },
 
   methods: {
+    async processDM({ event, ndsAdapter }) {
+      // To add additional processing, change this method in the service that is using this mixin
+      return this.decryptDM({ event, ndsAdapter })
+    },
+
+    async decryptDM({ event, ndsAdapter }) {
+      const decryptedEvent = await ndsAdapter.decryptDM(event)
+      const returnEvent = Object.assign({}, decryptedEvent)
+      returnEvent.noteid = nip19.noteEncode(decryptedEvent.id)
+      return returnEvent
+    }
+
+
     // async createIdentity({params, props, ctx}) {
 
     //   const {
@@ -251,12 +288,12 @@ module.exports = {
 
     //   const { profileEvent, nprofile, npub } = await this.actions.createProfile({...props, name: fullName, identifier })
 
-      
+
     // }
   },
 
-  async created() { 
-    
+  async created() {
+
   },
 
   async stopped() { }
