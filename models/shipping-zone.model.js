@@ -20,7 +20,7 @@ const ShippingZoneSchema = new Schema(
         default: "Worldwide - Online",
       },
     ]
-  }
+  }, { _id: false }
 );
 
 const defaultShippingZone = {

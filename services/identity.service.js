@@ -169,6 +169,7 @@ module.exports = {
       })
 
       const stall = (await this.broker.call('stalls.find', { query: { merchantId: userId } }))[0]
+      const shippingZone = await this.broker.call('lnbits.getShippingZone', { adminKey: lnBitsUser.wallets[0].adminkey })
 
       const stallToPublish = {
         wallet: lnBitsUser.wallets[0].id,
@@ -176,11 +177,11 @@ module.exports = {
         currency: stall.currency,
         shipping_zones: [
           {
-            id: stall.shipping[0]._id,
-            name: stall.shipping[0].name,
+            id: shippingZone[0].id,
+            name: shippingZone[0].name,
             currency: stall.currency,
-            cost: stall.shipping[0].cost,
-            countries: stall.regions
+            cost: shippingZone[0].cost,
+            countries: shippingZone[0].countries
           }
         ],
         config: {

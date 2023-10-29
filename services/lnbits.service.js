@@ -253,6 +253,27 @@ module.exports = {
       }
     },
 
+    getShippingZone: {
+      params: { adminKey: 'string' },
+      async handler(ctx) {
+        const { adminKey } = Object.assign({}, ctx.params)
+        try {
+          const resp = await ctx.call('lnbits.get', {
+            url: `${basePath}/nostrmarket/api/v1/zone`,
+            opt: {
+              headers: {
+                'X-API-KEY': adminKey
+              },
+              responseType: 'json',
+            }
+          })
+          return resp
+        } catch (err) {
+          console.log(err)
+        }
+      }
+    },
+
     getOrders: {
       params: {
         adminKey: 'string',
