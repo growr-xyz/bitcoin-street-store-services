@@ -104,19 +104,34 @@ module.exports = {
           lowerCaseAlphabets: true,
           specialChars: false
         })
-  
+
         const upd = await this.adapter.updateById(order._id, {
           $set: { shipped: true, deliveryCode }
         })
 
         const message = `Dear ${upd.customerUserName}, your order has been shipped with delivery code ${deliveryCode}, please give this code to the courier to complete the order.`
         const { wallet } = await ctx.call('identity.getLnBitsData')
-        console.log(wallet)
         const adminKey = wallet.adminkey
-        const updatedOrder = await ctx.call('lnbits.updateOrder', { id: upd.orderId, paid: upd.paid, shipped: upd.shipped, message, adminKey })
-        console.log(updatedOrder)
+        await ctx.call('lnbits.updateOrder', { id: upd.orderId, paid: upd.paid, shipped: upd.shipped, message, adminKey })
         return upd._doc
       },
+    },
+
+    sendMessageToOrderCustomer: {
+      params: {
+        order: 'object',
+        message:'string'
+      },
+      async handler(ctx) {
+        const { order, message } = Object.assign({}, ctx.params)
+        const { wallet } = await ctx.call('identity.getLnBitsData')
+        const adminKey = wallet.adminkey
+        await this.adapter.updateById(order._id, {
+          $set: { message } // TODO might need to push to have history of messages
+        })
+        await ctx.call('lnbits.updateOrder', { id: order.orderId, paid: order.paid, shipped: order.shipped, message, adminKey })
+        return true
+      }
     },
 
     deliverOrder: {
@@ -156,7 +171,7 @@ module.exports = {
             npubsToCheck.push(dmNpub)
           })
         }
-          if (npubsToCheck && npubsToCheck.length > 0) {
+        if (npubsToCheck && npubsToCheck.length > 0) {
           return npubsToCheck
         }
         return []
@@ -168,7 +183,7 @@ module.exports = {
         npubs: 'array',
       },
       async handler(ctx) {
-        const { npubs } =   Object.assign({}, ctx.params)
+        const { npubs } = Object.assign({}, ctx.params)
         for (let npub of npubs) {
 
           const identity = await ctx.call('identity.getIdentityByNostrPubkey', { npub })
@@ -177,7 +192,7 @@ module.exports = {
             .find(prop => prop.key === 'admin').value
           console.log('adminKey: ', adminKey)
           const rawOrders = await ctx.call('lnbits.getOrders', { adminKey })
-          rawOrders.sort((a, b) =>{
+          rawOrders.sort((a, b) => {
             new Date(a.event_created_at).valueOf() > new Date(b.event_created_at).valueOf()
           })
           const ordersToStore = []
