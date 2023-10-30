@@ -14,14 +14,13 @@ module.exports = {
         await ctx.call('orders.readOrdersForNpubs', { npubs })
         return true
       }
-    },
-    started() {
-      if (process.env.NOSTR_FETCH_ORDERS_PATTERN) {
-        cron.schedule(process.env.NOSTR_FETCH_ORDERS_PATTERN, () => {
-          this.actions.getOrders()
-        });
-      }
-
+    }
+  },
+  started() {
+    if (process.env.NOSTR_FETCH_ORDERS_PATTERN) {
+      cron.schedule(process.env.NOSTR_FETCH_ORDERS_PATTERN, () => {
+        this.actions.getOrders()
+      });
     }
   }
 }
