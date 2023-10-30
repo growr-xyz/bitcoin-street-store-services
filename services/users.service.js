@@ -367,8 +367,8 @@ module.exports = {
       },
       async handler(ctx) {
         const { user, otp } = Object.assign({}, ctx.params)
-        const fullUser = await this.adapter.findOne({ id: user._id })
-        if ((await this.validateOtp(fullUser, otp))) {
+        const fullUser = await this.adapter.findOne({ _id: user._id })
+        if ((await this.validateOtp(fullUser._doc, otp))) {
           await ctx.call('users.update', { id: user._id, otp: { ...user.otp, validated: true } })
         }
         return user
