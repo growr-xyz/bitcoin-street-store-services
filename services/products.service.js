@@ -52,7 +52,7 @@ module.exports = {
         const stall = await ctx.call('stalls.find', { merchantId: ctx.params.merchantId });
         const entity = await this.actions.create({
           ...ctx.params,
-          createdBy: 'AGENT NOSTR PUBKEY IMPLEMENT WITH NIP 98',
+          createdBy: ctx.meta.user.npub,
           stallId: stall[0]._id,
         });
         // return await this.transformDocuments(ctx, {}, entity);
