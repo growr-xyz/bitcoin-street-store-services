@@ -405,6 +405,7 @@ module.exports = {
 
     menu.state('members.orders.orderMessageSent', {
       run: async () => {
+        const { ctx } = menu.args;
         // get message from the menu
         const message = menu.val
         // get order from the session
@@ -414,7 +415,7 @@ module.exports = {
           menu.end(messages[locale]['invalidOrder']);
           return
         }
-        // TODO - send message to order.customerPublicKey
+        await ctx.call('orders.sendMessageToOrderCustomer', { order, message });
         menu.con(messages[locale]['members.orders.orderMessageSent'](order.customerUserName))
       },
       next: {
