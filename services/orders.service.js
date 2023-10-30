@@ -9,6 +9,8 @@ const { nip19 } = require('nostr-tools')
 const DbService = require('../mixins/db.mixin')
 const { OrderModel } = require('../models')
 const moleculerNostrService = require('../nostr/moleculer-nostr-service')
+const otpGenerator = require('otp-generator')
+
 
 module.exports = {
   name: 'orders',
@@ -97,9 +99,22 @@ module.exports = {
       },
       async handler(ctx) {
         const { order } = Object.assign({}, ctx.params)
-        const upd = await this.adapter.updateById(order._id, {
-          $set: { shipped: true }
+        const deliveryCode = otpGenerator.generate(8, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: true,
+          specialChars: false
         })
+  
+        const upd = await this.adapter.updateById(order._id, {
+          $set: { shipped: true, deliveryCode }
+        })
+
+        const message = `Dear ${upd.customerUserName}, your order has been shipped with delivery code ${deliveryCode}, please give this code to the courier to complete the order.`
+        const { wallet } = await ctx.call('identity.getLnBitsData')
+        console.log(wallet)
+        const adminKey = wallet.adminkey
+        const updatedOrder = await ctx.call('lnbits.updateOrder', { id: upd.orderId, paid: upd.paid, shipped: upd.shipped, message, adminKey })
+        console.log(updatedOrder)
         return upd._doc
       },
     },
@@ -113,6 +128,7 @@ module.exports = {
         const upd = await this.adapter.updateById(order._id, {
           $set: { delivered: true }
         })
+
         return upd._doc
       },
     },
@@ -188,8 +204,8 @@ module.exports = {
             await ctx.call('orders.addOrder', order)
             // TODO EMIT FOR SMS TO MERCHANT
           }
-          return true
         }
+        return true
       }
     },
 

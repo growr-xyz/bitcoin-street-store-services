@@ -68,6 +68,11 @@ const OrderSchema = new Schema(
       description: "Whether the order has been delivered",
       default: false
     },
+    deliveryCode: {
+      type: String,
+      description: "The delivery code of the order",
+      default: ""
+    },
     message: {
       type: String,
       description: "Message provided by the buyer during checkout"

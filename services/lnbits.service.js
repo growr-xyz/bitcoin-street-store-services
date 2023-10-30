@@ -295,7 +295,40 @@ module.exports = {
         } catch (err) {
           console.log(err)
         }
+      }
+    },
 
+    updateOrder: {
+      params: {
+        id: 'string|required',
+        message: 'string|optional',
+        paid: 'boolean|optional',
+        shipped: 'boolean|optional',
+        adminKey: 'string',
+      },
+      async handler(ctx) {
+        const { id, message, paid, shipped, adminKey } = Object.assign({}, ctx.params)
+        try {
+          const json = {
+            id,
+            message,
+            paid,
+            shipped
+          }
+          const resp = await ctx.call('lnbits.patch', {
+            url: `${basePath}/nostrmarket/api/v1/order/${id}`,
+            opt: {
+              headers: {
+                'X-API-KEY': adminKey
+              },
+              json,
+              responseType: 'json',
+            },
+          })
+          return resp
+        } catch (err) {
+          console.log(err)
+        }
       }
     }
   }
