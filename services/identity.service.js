@@ -64,6 +64,28 @@ module.exports = {
       }
     },
 
+    getIdentityByNostrPubkey: {
+      params: {
+        npub: 'string|required'
+      },
+      async handler(ctx) {
+        const { npub } = Object.assign({}, ctx.params)
+        const identity = await this.adapter.findOne({
+          identifiers: {
+            $elemMatch: {
+              provider: 'nostr',
+              properties: {
+                $elemMatch: {
+                  key: 'npub', value: npub
+                }
+              }
+            }
+          }
+        })
+        return identity
+      }
+    },
+
     getNostrIdentity: async (ctx) => {
       const user = ctx.meta.user
       const identity = (await this.actions.find({ query: { userId: { $eq: user._id } } }))[0]
@@ -142,6 +164,8 @@ module.exports = {
         password: nsec
       })
 
+      console.log('newUser ', lnBitsUser)
+
       await this.broker.emit('nostr-events.user.created', {
         event: profileEvent,
         userId,
@@ -167,6 +191,8 @@ module.exports = {
         publicKey: nip19.decode(npub).data,
         adminKey: lnBitsUser.wallets[0].adminkey
       })
+
+      console.log(merchant)
 
       const stall = (await this.broker.call('stalls.find', { query: { merchantId: userId } }))[0]
       const shippingZone = await this.broker.call('lnbits.getShippingZone', { adminKey: lnBitsUser.wallets[0].adminkey })
@@ -204,7 +230,7 @@ module.exports = {
         value: lnBitsUser.email
       }, {
         key: 'admin',
-        value: lnBitsUser.admin
+        value: lnBitsUser.wallets[0].adminkey
       }, {
         key: 'password',
         value: lnBitsUser.password

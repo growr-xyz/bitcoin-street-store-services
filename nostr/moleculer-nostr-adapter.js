@@ -194,6 +194,15 @@ class NostrClientAdapter {
     }
   }
 
+  async getAllDmsForPubKeys(pubkeys, filters) {
+    const filter = {
+      ...filters,
+      '#p': pubkeys,
+      kinds: [Kind.EncryptedDirectMessage],
+    }
+    return this.pool.sub(this.relays, [filter])
+  }
+
   // SINGLE RELAY methods
 
   async connectRelay() {

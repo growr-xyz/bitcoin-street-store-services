@@ -129,8 +129,36 @@ module.exports = {
           dms.push(event)
         })
       }
-
     },
+
+    getAllDMsForPubKeys: {
+      params: {
+        filters: 'object|optional',
+        npubs: 'array|required',
+      },
+      async handler(ctx) {
+        const { filters, npubs } = Object.assign({}, ctx.params);
+        const pubkeys = []
+        const ndsAdapter = new NDSAdapter()
+        const dms = []
+        npubs.map(npub => pubkeys.push(nip19.decode(npub).data))
+        const sub = await ndsAdapter.getAllDmsForPubKeys(pubkeys, filters)
+
+        async function waitForEvents() {
+          return new Promise((resolve) => {
+            sub.on('event', (event) => {
+              dms.push(event)
+            });
+            sub.on('eose', () => {
+              resolve(dms)
+            });
+          })
+        }
+
+        return await waitForEvents()
+      }
+    },
+
 
     getZapRequests: {
       params: {

@@ -40,7 +40,7 @@ module.exports = {
           }
         })
         console.log(resp)
-        return
+        return true
       }
     },
 
@@ -139,6 +139,7 @@ module.exports = {
           }
         })
         console.log(resp)
+        return true
       }
     },
     activateExtension: {
@@ -282,7 +283,7 @@ module.exports = {
         const { adminKey } = Object.assign({}, ctx.params)
         try {
           const resp = await ctx.call('lnbits.get', {
-            url: `${basePath}/nostrmarket/api/v1/order`,
+            url: `${basePath}/nostrmarket/api/v1/order?paid=true&shipped=false`,
             opt: {
               headers: {
                 'X-API-KEY': adminKey

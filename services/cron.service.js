@@ -8,22 +8,19 @@ module.exports = {
   mixins: [],
 
   actions: {
-    // getNostrInvestments: {
-    //   handler: async (ctx) => {
-    //     const allProjectKeys = await ctx.call('nds.keys')
-    //     for (const projectKey of allProjectKeys) {
-    //       // const project = await ctx.call('nds.get', projectKey)
-    //       await ctx.call('nostr.getInvestments', { projectKey })
-    //     }
-    //     return
-    //   }
-    // },
+    getOrders: {
+      handler: async (ctx) => {
+        const npubs = await ctx.call('orders.checkDmMessages')
+        await ctx.call('orders.readOrdersForNpubs', { npubs })
+        return true
+      }
+    },
     started() {
-      // if (process.env.NOSTR_FETCH_ZAPS_CRON_PATTERN) {
-        // cron.schedule(process.env.NOSTR_FETCH_ZAPS_CRON_PATTERN, () => {
-        //   this.actions.getNostrInvestments()
-        // });
-      // }
+      if (process.env.NOSTR_FETCH_ORDERS_PATTERN) {
+        cron.schedule(process.env.NOSTR_FETCH_ORDERS_PATTERN, () => {
+          this.actions.getOrders()
+        });
+      }
 
     }
   }
